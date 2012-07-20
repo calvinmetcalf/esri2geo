@@ -1,4 +1,4 @@
-function toGeoJSON(data){
+function toGeoJSON(data,cb){
     var outPut = { "type": "FeatureCollection",
   "features": []};
     var fl = data.features.length;
@@ -104,6 +104,10 @@ function c(a){
      i++;
  }
     return o<=0;
-}   
+}  
+if(cb){
+ cb(outPut)
+}else{
 return outPut;  
+}
 }
