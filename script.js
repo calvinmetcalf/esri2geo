@@ -100,7 +100,7 @@ function geocode(){
     old.center=m.getCenter();
     old.zoom=m.getZoom();
  var address =$("#address").val();
- var gURL = 'http://open.mapquestapi.com/nominatim/v1/search?countrycodes=us&exclude_place_ids=955483008,950010827&format=json&q='
+ var gURL = 'http://open.mapquestapi.com/nominatim/v1/search?countrycodes=us&exclude_place_ids=955483008,950010827&viewbox=-76.212158203125%2C44.46123053905882%2C-66.005859375%2C40.107487419012415&bounded=1&format=json&q='
   $.ajax({
        type: "GET",
        url: gURL + address,
