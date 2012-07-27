@@ -1,0 +1,1 @@
+{"ts":1342178801592,"silentsave":true,"restoring":false,"patch":[[{"diffs":[[1,"esri2geo\n========\n\nConverts ESRI json to geojson, won't work with donut polygons, deffinitly won't work with donut multipolygons"]],"start1":0,"start2":0,"length1":0,"length2":128}]],"length":128}

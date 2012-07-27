@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset='utf-8'/>
+    <style>
+      html { height: 100% }
+      body { height: 100%; margin: 0; padding: 0;}
+      #map{ height: 100% }
+      #tabs{position:absolute;
+  z-index:10;
+  margin-left:75px;
+  margin-top:5px;
+  padding:0;
+  font-size:12px;}
+  #address{
+   width:16em;   
+  }
+    </style>
+    <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/themes/smoothness/jquery-ui.css"/>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.3.1/leaflet.css" />
+    <!--[if lte IE 8]>
+      <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.3.1/leaflet.ie.css" />
+    <![endif]-->
+    <script src="http://cdn.leafletjs.com/leaflet-0.3.1/leaflet.js"></script>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js"></script>
+        <script type="text/javascript" src="http://calvinmetcalf.github.com/jquery-placeholder/jquery.placeholder.min.js"></script>
+    <title>
+     Project Locations
+    </title>
+  </head>
+  <body><div id="tabs">
+    <ul>
+    <li><a href="#search">Search</a></li>
+      <li><a href="#query">Query</a></li>
+    </ul>
+    <div id="search"><form id="geocoder"><input type="text" id="address" placeholder="Enter an Address or LatLong" />
+  <input type="submit" value="Search" id="geocode"/>
+  <input type="reset" value="Reset" id="resetgeo"/></form>
+        </div>
+        <div id="query"><select id="getStatus"><option value="">All</option><option value="1">Green</option><option value="2">Yellow</option><option value="3">Red</option></select></div></div>
+    <div id="map"></div>
+<script type="text/javascript" src="esri2geo.js"></script>
+    <script type="text/javascript" src="script.js"></script>
+  </body>
+</html>
