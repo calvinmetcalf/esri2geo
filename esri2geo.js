@@ -8,8 +8,11 @@ function toGeoJSON(data,cb){
 /* as only ESRI based products care if all the features are the same type of geometry, check for geometry type at a feature level*/
      var outFT = {
             "type": "Feature",
-            "properties":ft.attributes
+            "properties":prop(ft.attributes)
         };
+        if(ft.attributes.OBJECTID){
+         outFT.id=ft.attributes.OBJECTID;
+        }
         if(ft.geometry.x){
 //check if it's a point
           outFT.geometry=point(ft.geometry);
@@ -105,6 +108,15 @@ function c(a){
  }
     return o<=0;
 }  
+function prop(a){
+ var p = {};
+ for(var k in a){
+  if(a[k]){
+   p[k]=a[k];   
+  }
+ }
+ return p;
+}
 if(cb){
  cb(outPut)
 }else{
