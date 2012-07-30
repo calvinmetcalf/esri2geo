@@ -38,7 +38,13 @@
   <input type="submit" value="Search" id="geocode"/>
   <input type="reset" value="Reset" id="resetgeo"/></form>
         </div>
-        <div id="query"><select id="getStatus"><option value="">All</option><option value="1">Green</option><option value="2">Yellow</option><option value="3">Red</option></select></div></div>
+        <div id="query"><select id="getStatus"><option value="">All</option><option value="1">Green</option><option value="2">Yellow</option><option value="3">Red</option></select>
+        <select id="getDi">
+        <option value="">Highway And MBTA</option>
+        <option value="Highway">Highway</option>
+        <option value="MBTA">MBTA</option>
+        </select>
+        </div></div>
     <div id="map"></div>
 <script type="text/javascript" src="esri2geo.js"></script>
     <script type="text/javascript" src="script.js"></script>

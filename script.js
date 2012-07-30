@@ -47,13 +47,26 @@ var icon={
     green:ibase.extend({iconUrl:"img/green.png"})
 }
 //get the current bounds
-var bbox=m.getBounds().toBBoxString();
+var bbox=/*m.getBounds().toBBoxString();*/"-76.1627197265625,40.052847601823984,-65.9564208984375,44.57873024377564";
 //the url. note we're only getting a subset of fields
 var url = {};
 url.line = "http://services.massdot.state.ma.us/ArcGIS/rest/services/Projects/Project_Lines/MapServer/0/query?"
 url.point = "http://services.massdot.state.ma.us/ArcGIS/rest/services/Projects/Project_Points/MapServer/0/query?"
 url.fields="ProjectNumber,District,Location,ProjectType,CompletionDate,BudgetSource,Department,Progress"
-url.where="Status%3D%27Active%27"
+url.where={"Status":"Active"};
+url.setW=function(k,v){
+ url.where[k]=v;   
+}
+url.rmW=function(k){
+    delete url.where[k]
+}
+url.getW=function(){
+    var a = [];
+ for(var k in url.where){
+     a.push(k+"%3D%27"+url.where[k]+"%27")
+ }
+ return a.join("%20AND%20")
+}
 url.end = "&f=json&outSR=4326&inSR=4326&geometryType=esriGeometryEnvelope&geometry="
 //get the features
 getLayers(bbox);
@@ -63,11 +76,11 @@ function parseJSONP(data){
 toGeoJSON(data,function(d){gj.addGeoJSON(d)});
 }
 //set up listeners on both drag and zoom events
-m.on("dragend",redo);
-m.on("zoomend",redo);
+//m.on("dragend",redo);
+//m.on("zoomend",redo);
 //the function called by those event listeners
 function redo(){
-    bbox=m.getBounds().toBBoxString();//get the new bounds
+    //bbox=m.getBounds().toBBoxString();
     gj.clearLayers();//clear the current layers
    getLayers(bbox);//ajax request
 }
@@ -80,8 +93,8 @@ var a = [];
  return a.join("<br/>");
 };
 function getLayers(bbox){
-    $.get(url.point+"outFields="+url.fields+"&where="+url.where+url.end+bbox,parseJSONP,"JSONP");
-    $.get(url.line+"outFields="+url.fields+"&where="+url.where+url.end+bbox,parseJSONP,"JSONP");
+    $.get(url.point+"outFields="+url.fields+"&where="+url.getW()+url.end+bbox,parseJSONP,"JSONP");
+    $.get(url.line+"outFields="+url.fields+"&where="+url.getW()+url.end+bbox,parseJSONP,"JSONP");
 }
 function pl(latlng){
     return new L.Marker(latlng);
@@ -129,9 +142,18 @@ $("#resetgeo").click(resetgeo);
 $("#getStatus").change(function(){
       var val = $("#getStatus").val();
       if(val==""){
-         url.where="Status%3D%27Active%27"
+        url.rmW("Progress");
       }else{
-        url.where="Status%3D%27Active%27%20AND%20Progress%3D"+val;  
+        url.setW("Progress",val)  
       }
       redo()
-    })
+    });
+$("#getDi").change(function(){
+      var val = $("#getDi").val();
+      if(val==""){
+        url.rmW("Department");
+      }else{
+        url.setW("Department",val)  
+      }
+      redo()
+    });
