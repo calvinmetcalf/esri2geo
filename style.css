@@ -9,6 +9,11 @@
   font-size:12px;}
   .tbox{
    width:16em;   
+  }#logo{
+   position:absolute;
+   bottom:20px;
+   right:15px;
+   z-index:11;
   }
   .ui-autocomplete {
         max-height: 200px;
