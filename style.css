@@ -1,0 +1,26 @@
+  html { height: 100% }
+      body { height: 100%; margin: 0; padding: 0;}
+      #map{ height: 100% }
+      #tabs{position:absolute;
+  z-index:10;
+  margin-left:75px;
+  margin-top:5px;
+  padding:0;
+  font-size:12px;}
+  .tbox{
+   width:16em;   
+  }
+  .ui-autocomplete {
+        max-height: 200px;
+		overflow-y: auto;
+		/* prevent horizontal scrollbar */
+		overflow-x: hidden;
+		/* add padding to account for vertical scrollbar */
+		padding-right: 20px;
+	}
+	/* IE 6 doesn't support max-height
+	 * we use height instead, but this forces the menu to always be this tall
+	 */
+	* html .ui-autocomplete {
+		height: 200px;
+	}
