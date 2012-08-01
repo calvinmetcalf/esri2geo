@@ -2,6 +2,8 @@
 var center = new L.LatLng(42.3584308,-71.0597732);
 var zoom = 8;
 var url= "http://{s}.mqcdn.com/tiles/1.0.0/osm/{z}/{x}/{y}.png";
+var ac;
+var sw=0;
 var options={
         subdomains:["otile1","otile2",/*"otile3",*/"otile4"],//we'd usually use all 4 but something is up with #3 at the moment
         attribution:"Tiles Courtesy of <a href='http://www.mapquest.com/' target='_blank'>MapQuest</a> <img src='http://developer.mapquest.com/content/osm/mq_logo.png'>"
@@ -14,37 +16,46 @@ var m = new L.Map('map',{
     zoom:zoom,
     layers:[tiles]
     });
-var gj =  new L.GeoJSON({ "type": "FeatureCollection",  "features": []},{pointToLayer:pl});
-//create empty geojson object and add it to the map
-m.addLayer(gj);
-//create the popups
-gj.on("featureparse", function (e) {
+var gj =   L.geoJson({ "type": "FeatureCollection",  "features": []},{pointToLayer:pl,onEachFeature:gjon}).addTo(m);
+var lu= L.geoJson({ "type": "FeatureCollection",  "features": []},{pointToLayer:pl,onEachFeature:luon}).addTo(m);
+
+function luon(e,l) {
     if (e.properties){
-        e.layer.bindPopup(makePop(e.properties));
+        l.bindPopup(makePop(e.properties));
+    }if(l.setStyles){
+     l.setStyle({color:"#0000ff",fillOpacity:1,opacity:1});   
     }
-    if(e.properties.Progress&&e.layer.setStyle){
+};
+//create empty geojson object and add it to the map
+
+//create the popups
+function gjon(e,l) {
+    if (e.properties){
+        l.bindPopup(makePop(e.properties));
+    }
+    if(e.properties.Progress&&l.setStyle){
        if(e.properties.Progress==3){
-        e.layer.setStyle({color:"#ff0000",fillOpacity:0.8,opacity:1});   
+        l.setStyle({color:"#ff0000",fillOpacity:0.8,opacity:1});   
        }else if(e.properties.Progress==2){
-        e.layer.setStyle({color:"#ffff00",fillOpacity:0.8,opacity:1});   
+        l.setStyle({color:"#ffff00",fillOpacity:0.8,opacity:1});   
        }else if(e.properties.Progress==1){
-        e.layer.setStyle({color:"#00ff00",fillOpacity:0.8,opacity:1});   
+        l.setStyle({color:"#00ff00",fillOpacity:0.8,opacity:1});   
        }
-    }else if(e.properties.Progress&&e.layer.setIcon){
+    }else if(e.properties.Progress&&l.setIcon){
        if(e.properties.Progress==3){
-        e.layer.setIcon(new icon.red);   
+        l.setIcon(icon.red);   
        }else if(e.properties.Progress==2){
-        e.layer.setIcon(new icon.yellow);   
+        l.setIcon(icon.yellow);   
        }else if(e.properties.Progress==1){
-        e.layer.setIcon(new icon.green);   
+        l.setIcon(icon.green);   
        }
     }
-});
-var ibase = L.Icon.extend({shadowUrl:null,iconSize: new L.Point(9, 9),iconAnchor: new L.Point(0, 0)});
+}
+
 var icon={
-    red:ibase.extend({iconUrl:"img/red.png"}),
-    yellow:ibase.extend({iconUrl:"img/yellow.png"}),
-    green:ibase.extend({iconUrl:"img/green.png"})
+    red:L.icon({iconUrl:"img/red.png",iconSize: L.point(9, 9)}),
+    yellow:L.icon({iconUrl:"img/yellow.png",iconSize:  L.point(9, 9)}),
+    green:L.icon({iconUrl:"img/green.png",iconSize:  L.point(9, 9)})
 }
 //get the current bounds
 var bbox=/*m.getBounds().toBBoxString();*/"-76.1627197265625,40.052847601823984,-65.9564208984375,44.57873024377564";
@@ -73,7 +84,8 @@ getLayers(bbox);
 //this is the call back from the jsonp ajax request
 function parseJSONP(data){
 /*you'd think you'd want to put the command to clear the old layer here instead of after zooming, but the markers are not not visible when you zoom, so it ends up being much less noticeable clearing them earlier*/
-toGeoJSON(data,function(d){gj.addGeoJSON(d)});
+toGeoJSON(data,function(d){gj.addData(d)});
+makeAuto(data);
 }
 //set up listeners on both drag and zoom events
 //m.on("dragend",redo);
@@ -93,11 +105,12 @@ var a = [];
  return a.join("<br/>");
 };
 function getLayers(bbox){
+    ac={};
     $.get(url.point+"outFields="+url.fields+"&where="+url.getW()+url.end+bbox,parseJSONP,"JSONP");
     $.get(url.line+"outFields="+url.fields+"&where="+url.getW()+url.end+bbox,parseJSONP,"JSONP");
 }
-function pl(latlng){
-    return new L.Marker(latlng);
+function pl(f,latlng){
+    return L.marker(latlng);
 }
 $(function() {
         $( "#tabs" ).tabs({
@@ -157,3 +170,43 @@ $("#getDi").change(function(){
       }
       redo()
     });
+function makeAuto(d){
+   var f= d.features;
+   var len = d.features.length
+   var i = 0;
+   while(i<len){
+       if(!ac[f[i].attributes.ProjectNumber]){
+       ac[f[i].attributes.ProjectNumber]=d.geometryType;
+       }
+       i++;
+    }
+if(sw===0){sw++;}else if(sw===1){
+    sw--;
+    var a=[];
+    for(var k in ac){
+     a.push(k);   
+    }
+    
+$("#ProjNum").autocomplete({source:a});
+}
+}
+$("#ProjLookUp").submit(lookUp);
+var b;
+function lookUp(){
+    b= [m.getCenter(),m.getZoom()];
+    var t= {esriGeometryPoint:"point",esriGeometryPolyline:"line"}
+    var v=$("#ProjNum").val();
+    $.get(url[t[ac[v]]]+"outFields="+url.fields+"&where=ProjectNumber%3D%27"+v+"%27"+url.end+bbox,parseLookUp,"JSONP");
+    function parseLookUp(data){
+        toGeoJSON(data,function(d){
+            lu.addData(d);
+            m.fitBounds(lu.getBounds());
+            });
+    };
+   
+return false
+}
+$("#ProjReset").click(function(){
+    lu.clearLayers();
+    m.setView(b[0],b[1]);
+    })

@@ -12,16 +12,16 @@
   margin-top:5px;
   padding:0;
   font-size:12px;}
-  #address{
+  .tbox{
    width:16em;   
   }
     </style>
     <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/themes/smoothness/jquery-ui.css"/>
-    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.3.1/leaflet.css" />
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.4.2/leaflet.css" />
     <!--[if lte IE 8]>
-      <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.3.1/leaflet.ie.css" />
+      <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.4.2/leaflet.ie.css" />
     <![endif]-->
-    <script src="http://cdn.leafletjs.com/leaflet-0.3.1/leaflet.js"></script>
+    <script src="http://cdn.leafletjs.com/leaflet-0.4.2/leaflet.js"></script>
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js"></script>
         <script type="text/javascript" src="http://calvinmetcalf.github.com/jquery-placeholder/jquery.placeholder.min.js"></script>
@@ -33,8 +33,9 @@
     <ul>
     <li><a href="#search">Search</a></li>
       <li><a href="#query">Query</a></li>
+      <li><a href="#LookUp">Look Up</a></li>
     </ul>
-    <div id="search"><form id="geocoder"><input type="text" id="address" placeholder="Enter an Address or LatLong" />
+    <div id="search"><form id="geocoder"><input type="text" class="tbox" id="address" placeholder="Enter an Address or LatLong" />
   <input type="submit" value="Search" id="geocode"/>
   <input type="reset" value="Reset" id="resetgeo"/></form>
         </div>
@@ -44,7 +45,10 @@
         <option value="Highway">Highway</option>
         <option value="MBTA">MBTA</option>
         </select>
-        </div></div>
+        </div>
+        
+        <div id="LookUp"><form id="ProjLookUp"><input type="text" id="ProjNum" class="tbox" placeholder="Enter a Project Number" /><input type="submit" value="Look Up" id="ProjLookUp"/>
+  <input type="reset" value="Reset" id="ProjReset"/></form></div></div>
     <div id="map"></div>
 <script type="text/javascript" src="esri2geo.js"></script>
     <script type="text/javascript" src="script.js"></script>
