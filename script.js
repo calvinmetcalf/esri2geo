@@ -41,22 +41,14 @@ function gjon(e,l) {
        }else if(e.properties.Progress==1){
         l.setStyle({color:"#00ff00",fillOpacity:0.8,opacity:1});   
        }
-    }else if(e.properties.Progress&&l.setIcon){
-       if(e.properties.Progress==3){
-        l.setIcon(icon.red);   
-       }else if(e.properties.Progress==2){
-        l.setIcon(icon.yellow);   
-       }else if(e.properties.Progress==1){
-        l.setIcon(icon.green);   
-       }
     }
 }
 
-var icon={
+/*var icon={
     red:L.icon({iconUrl:"img/red.png",iconSize: L.point(9, 9)}),
     yellow:L.icon({iconUrl:"img/yellow.png",iconSize:  L.point(9, 9)}),
     green:L.icon({iconUrl:"img/green.png",iconSize:  L.point(9, 9)})
-}
+}*/
 //get the current bounds
 var bbox=/*m.getBounds().toBBoxString();*/"-76.1627197265625,40.052847601823984,-65.9564208984375,44.57873024377564";
 //the url. note we're only getting a subset of fields
@@ -110,7 +102,7 @@ function getLayers(bbox){
     $.get(url.line+"outFields="+url.fields+"&where="+url.getW()+url.end+bbox,parseJSONP,"JSONP");
 }
 function pl(f,latlng){
-    return L.marker(latlng);
+    return L.circleMarker(latlng,{radius:4});
 }
 $(function() {
         $( "#tabs" ).tabs({
