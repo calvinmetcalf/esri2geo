@@ -28,4 +28,30 @@
 	 */
 	* html .ui-autocomplete {
 		height: 200px;
-	}
+	} #legend{
+      background-color:white;
+      border-style:solid;
+  border-width:2px;
+  z-index:11;
+  position: absolute;
+  bottom:20px;
+  left: 15px;
+  padding-left:10px;
+  padding-right:10px;
+  }
+  #legend ul 
+  {
+      list-type:circle;
+      margin:0;
+      padding-left:1em;
+      paddding-top:0;}
+  .green{
+      list-style-image:url(img/green.png);
+  }
+  .red{
+  list-style-image:url(img/red.png);
+  }
+  .yellow{
+  list-style-image:url(img/yellow.png);
+  }
+ 
