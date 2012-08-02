@@ -111,3 +111,4 @@ if(cb){
 return outPut;  
 }
 }
+if (typeof module !== undefined) module.exports =toGeoJSON;

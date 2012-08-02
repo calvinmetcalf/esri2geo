@@ -1,0 +1,7 @@
+{
+  "name": "esri2geo",
+  "version": "0.0.1",
+  "description": "convert esri JSON to geojson",
+  "main": "esri2geo.js",
+  "license": "MIT"
+}
