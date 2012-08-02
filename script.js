@@ -16,7 +16,9 @@ var m = new L.Map('map',{
     zoom:zoom,
     layers:[tiles]
     });
-var gj =   L.geoJson({ "type": "FeatureCollection",  "features": []},{pointToLayer:pl,onEachFeature:gjon}).addTo(m);
+var g = L.layerGroup().addTo(m);
+var gl =   L.geoJson({ "type": "FeatureCollection",  "features": []},{pointToLayer:pl,onEachFeature:gjon});
+var gp =   L.geoJson({ "type": "FeatureCollection",  "features": []},{pointToLayer:pl,onEachFeature:gjon});
 var lu= L.geoJson({ "type": "FeatureCollection",  "features": []},{pointToLayer:pl,onEachFeature:luon}).addTo(m);
 
 function luon(e,l) {
@@ -48,6 +50,7 @@ function gjon(e,l) {
        }else if(e.properties.Progress==1){
         l.setStyle({color:"#00ff00",fillOpacity:0.8,opacity:1});   
        }
+      
     }
 }
 
@@ -81,10 +84,17 @@ url.end = "&f=json&outSR=4326&inSR=4326&geometryType=esriGeometryEnvelope&geomet
 //get the features
 getLayers(bbox);
 //this is the call back from the jsonp ajax request
-function parseJSONP(data){
+function parsePoint(data){
 /*you'd think you'd want to put the command to clear the old layer here instead of after zooming, but the markers are not not visible when you zoom, so it ends up being much less noticeable clearing them earlier*/
-toGeoJSON(data,function(d){gj.addData(d)});
+toGeoJSON(data,function(d){gp.addData(d)});
 makeAuto(data);
+}
+function parseLine(data){
+/*you'd think you'd want to put the command to clear the old layer here instead of after zooming, but the markers are not not visible when you zoom, so it ends up being much less noticeable clearing them earlier*/
+toGeoJSON(data,function(d){gl.addData(d)});
+makeAuto(data);
+g.addLayer(gl).addLayer(gp);
+
 }
 //set up listeners on both drag and zoom events
 //m.on("dragend",redo);
@@ -92,7 +102,10 @@ makeAuto(data);
 //the function called by those event listeners
 function redo(){
     //bbox=m.getBounds().toBBoxString();
-    gj.clearLayers();//clear the current layers
+    g.clearLayers();
+    gl.clearLayers();
+    gp.clearLayers();
+    //clear the current layers
    getLayers(bbox);//ajax request
 }
 //the function called earlier to make the popup, it goes through all the attributes and makes them into a nice key value list
@@ -105,8 +118,8 @@ var a = [];
 };
 function getLayers(bbox){
     ac={};
-    $.get(url.point+"outFields="+url.fields+"&where="+url.getW()+url.end+bbox,parseJSONP,"JSONP");
-    $.get(url.line+"outFields="+url.fields+"&where="+url.getW()+url.end+bbox,parseJSONP,"JSONP");
+    $.get(url.point+"outFields="+url.fields+"&where="+url.getW()+url.end+bbox,parsePoint,"JSONP");
+    $.get(url.line+"outFields="+url.fields+"&where="+url.getW()+url.end+bbox,parseLine,"JSONP");
 }
 function pl(f,latlng){
     return L.circleMarker(latlng,{radius:4});
