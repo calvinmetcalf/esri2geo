@@ -32,8 +32,15 @@ function luon(e,l) {
 function gjon(e,l) {
     if (e.properties){
         l.bindPopup(makePop(e.properties));
-    }
-    if(e.properties.Progress&&l.setStyle){
+    }if(e.properties.Progress&&l.setRadius){
+          if(e.properties.Progress==3){
+        l.setStyle({color:"#000",fillColor:"#ff0000",fillOpacity:0.8,opacity:1,weight:1});   
+       }else if(e.properties.Progress==2){
+        l.setStyle({color:"#000",fillColor:"#ffff00",fillOpacity:0.8,opacity:1,weight:1});   
+       }else if(e.properties.Progress==1){
+        l.setStyle({color:"#000",fillColor:"#00ff00",fillOpacity:0.8,opacity:1,weight:1});   
+       }
+    }else if(e.properties.Progress&&l.setStyle){
        if(e.properties.Progress==3){
         l.setStyle({color:"#ff0000",fillOpacity:0.8,opacity:1});   
        }else if(e.properties.Progress==2){
