@@ -65,7 +65,7 @@ var bbox=/*m.getBounds().toBBoxString();*/"-76.1627197265625,40.052847601823984,
 var url = {};
 url.line = "http://services.massdot.state.ma.us/ArcGIS/rest/services/Projects/Project_Lines/MapServer/0/query?"
 url.point = "http://services.massdot.state.ma.us/ArcGIS/rest/services/Projects/Project_Points/MapServer/0/query?"
-url.fields="ProjectNumber,District,Location,ProjectType,CompletionDate,BudgetSource,Department,Progress"
+url.fields="ProjectNumber,District,Location,ProjectType,CompletionDate,BudgetSource,Department,ProjectProgress,Progress"
 url.where={"Status":"Active"};
 url.setW=function(k,v){
  url.where[k]=v;   
@@ -111,8 +111,11 @@ function redo(){
 //the function called earlier to make the popup, it goes through all the attributes and makes them into a nice key value list
 function makePop(p){
 var a = [];
+
  for(var key in p){
-     a.push(key+": "+p[key]);
+     if(key!=="Progress"){
+     a.push(key.replace(/(([a-z])([A-Z]))/g,"$2 $3")+": "+p[key]);
+     }
  }
  return a.join("<br/>");
 };
