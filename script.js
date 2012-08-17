@@ -114,7 +114,13 @@ var a = [];
 
  for(var key in p){
      if(key!=="Progress"){
+         if(key=="CompletionDate"){
+             var d =  new Date(parseInt(p[key]));
+            a.push(key.replace(/(([a-z])([A-Z]))/g,"$2 $3")+": "+ d.toDateString());
+             }else{
+         
      a.push(key.replace(/(([a-z])([A-Z]))/g,"$2 $3")+": "+p[key]);
+         }
      }
  }
  return a.join("<br/>");
