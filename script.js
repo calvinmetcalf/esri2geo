@@ -1,12 +1,12 @@
 //set the options
 var center = new L.LatLng(42.3584308,-71.0597732);
 var zoom = 8;
-var url= "http://{s}.mqcdn.com/tiles/1.0.0/osm/{z}/{x}/{y}.png";
+var url= "http://{s}.mqcdn.com/tiles/1.0.0/osm/{z}/{x}/{y}.jpeg";
 var ac;
 var sw=0;
 var options={
-        subdomains:["otile1","otile2",/*"otile3",*/"otile4"],//we'd usually use all 4 but something is up with #3 at the moment
-        attribution:"Tiles Courtesy of <a href='http://www.mapquest.com/' target='_blank'>MapQuest</a> <img src='http://developer.mapquest.com/content/osm/mq_logo.png'>"
+        subdomains:["otile1","otile2","otile3","otile4"],
+        attribution:"Tile Data from <a href='http://www.openstreetmap.org/' target='_blank'>OSM</a>, Tiles Courtesy of <a href='http://www.mapquest.com/' target='_blank'>MapQuest</a> <img src='http://developer.mapquest.com/content/osm/mq_logo.png'>"
     };
 //create the tiles    
 var tiles = new L.TileLayer(url,options);
