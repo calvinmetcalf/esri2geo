@@ -72,7 +72,7 @@ def parseGeo(g):
     elif t == "polygon":
         if g.partCount==1:
             geo["type"]="Polygon"
-            geo["coordinates"]=parsePoly(g.getPart(0))
+            geo["coordinates"]=[parsePoly(g.getPart(0))]
         else:
             geo["type"]="MultiPolygon"
             c=[]
