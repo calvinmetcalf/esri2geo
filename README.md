@@ -18,6 +18,8 @@ having a ring imidiatly followed by its holes. while with esrijson
 With the holes and polygons mixed together, but the polygons all going clockwise and the holes all going counter clockwise. The only way to check which polygon
 a while is within is to check geographically which polygon it falls within. 
 
+But wait there's more! Because all the tools I could find all required installing stuff, I wront my own arcpy tool so that we can convert any arcgis feature thingy.  Only tested in 10.0.
+
 Copyright (c) 2012 Calvin Metcalf
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
