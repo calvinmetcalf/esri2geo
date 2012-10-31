@@ -14,7 +14,7 @@ def parseProp(row,t):
     p=dict()
     for e in t:
         if (t[e] != u'OID') and e != ('Shape_Length' or 'Shape_Area'):
-            if row.getValue(e) != "":
+            if row.getValue(e) is not None and row.getValue(e) != "":
                 p[e]=row.getValue(e)
     return p
 def parseLine(l):
