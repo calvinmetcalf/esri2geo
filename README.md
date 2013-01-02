@@ -1,22 +1,7 @@
 esri2geo
 ========
 
-Converts ESRI json to geojson, should work with donut polygons, due to how esri json handles hole geometry there is no easy way to convert to geojson whenthere are
-holes and multiple polygons. Bassically geojson does it this way
-
-    [
-    [[polyring1],[holering1a],[holering1b]],
-    [[polyring2],[holering2a],[holering2b]]
-    ]
-
-having a ring imidiatly followed by its holes. while with esrijson
-
-    [
-    [polyring1],[holering1a],[polyring2],[holering1b],[holering2a],[holering2b]
-    ]
-    
-With the holes and polygons mixed together, but the polygons all going clockwise and the holes all going counter clockwise. The only way to check which polygon
-a while is within is to check geographically which polygon it falls within, though the tool that [esri wrote](https://github.com/Esri/geojson-utils) implies that one can assume that holes follow the polygon. 
+Converts ESRI json to geojson, should work with donut polygons as [a tool that esri wrote](https://github.com/Esri/geojson-utils) imlies we can assume holes in donut polygons imidiatly follow their other ring.
 
 But wait there's more! Because all the tools I could find all required installing stuff, I wront my own arcpy tool so that we can convert any arcgis feature thingy.  Only tested in 10.0.
 
