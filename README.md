@@ -16,7 +16,7 @@ having a ring imidiatly followed by its holes. while with esrijson
     ]
     
 With the holes and polygons mixed together, but the polygons all going clockwise and the holes all going counter clockwise. The only way to check which polygon
-a while is within is to check geographically which polygon it falls within. 
+a while is within is to check geographically which polygon it falls within, though the tool that [esri wrote](https://github.com/Esri/geojson-utils) implies that one can assume that holes follow the polygon. 
 
 But wait there's more! Because all the tools I could find all required installing stuff, I wront my own arcpy tool so that we can convert any arcgis feature thingy.  Only tested in 10.0.
 
