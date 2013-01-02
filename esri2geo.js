@@ -63,7 +63,7 @@ function decodePolygon(a){
     var i = 0;
     var len2 = coords.length-1;
     while(len>i){
-        if(c(a[i])){
+        if(ringIsClockwise(a[i])){
             coords.push([a[i]]);
             len2++;
         }else{
@@ -78,23 +78,28 @@ function decodePolygon(a){
     }
     return {"type":type,"coordinates":coords};
 }
-function c(a){
-//return true if clockwise
- var l = a.length-1;
- var i = 0;
- var o=0;
-
- while(l>i){
- o+=(a[i][0]*a[i+1][1]-a[i+1][0]*a[i][1]);
-   
-     i++;
- }
-    return o<=0;
-}  
+/*determine if polygon ring coordinates are clockwise. clockwise signifies outer ring, counter-clockwise an inner ring
+   or hole. this logic was found at http://stackoverflow.com/questions/1165647/how-to-determine-if-a-list-of-polygon-
+   points-are-in-clockwise-order
+   this code taken from http://esri.github.com/geojson-utils/src/jsonConverters.js by James Cardona (MIT lisense)
+   */
+  function ringIsClockwise(ringToTest) {
+    var total = 0,
+        i = 0,
+        rLength = ringToTest.length,
+        pt1 = ringToTest[i],
+        pt2;
+    for (i; i < rLength - 1; i++) {
+      pt2 = ringToTest[i + 1];
+      total += (pt2[0] - pt1[0]) * (pt2[1] + pt1[1]);
+      pt1 = pt2;
+    }
+    return (total >= 0);
+  }
 if(cb){
  cb(outPut);
 }else{
 return outPut;  
 }
 }
-if (typeof module !== undefined) module.exports =toGeoJSON;
+if (typeof module !== "undefined") module.exports = toGeoJSON;
