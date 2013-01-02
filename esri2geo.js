@@ -53,44 +53,30 @@ function poly(geometry){
         return {"type": "Polygon","coordinates": geometry.rings};
     }else{
 /*if it isn't that easy then we have to start checking ring direction, basically the ring goes clockwise its part of the polygon, if it goes counterclockwise it is a hole in the polygon, but geojson does it by haveing an array with the first element be the polygons and the next elements being holes in it*/
-        var ccc= dP(geometry.rings);
-        var d = ccc[0];
-        var dd = ccc[1];
-        var r=[];
-        if(dd.length===0){
-/*if their are no holes we don't need to worry about this, but do need to stuck each ring inside its own array*/
-            var l2 = d.length;
-            var i3 = 0;
-            while(l2>i3){
-             r.push([d[i3]]);   
-            }
-            return { "type": "MultiPolygon","coordinates":r}; 
-        }else if(d.length===1){
-/*if their is only one clockwise ring then we know all holes are in that poly*/
-            dd.unshift(d[0]);
-            return {"type": "Polygon","coordinates": dd};
-            
-        }else{
-/*if their are multiple rings and holes we have no way of knowing which belong to which without looking at it specially, so just dump the coordinates and add  a hole field, this may cause errors*/
-            return { "type": "MultiPolygon","coordinates":d, "holes":dd};
-        }  
+        return decodePolygon(geometry.rings);
     }
 }
-function dP(a){
-//returns an array of 2 arrays, the first being all the clockwise ones, the second counter clockwise
-    var d = [];
-        var dd =[];
-        var l = a.length;
-        var ii = 0;
-        while(l>ii){
-            if(c(a[ii])){
-                d.push(a[ii]);
-            }else{
-             dd.push(a[ii]);
-            }
-         ii++;
+function decodePolygon(a){
+//returns the feature
+    var coords = [],type;
+    var len = a.length;
+    var i = 0;
+    var len2 = coords.length-1;
+    while(len>i){
+        if(c(a[i])){
+            coords.push([a[i]]);
+            len2++;
+        }else{
+         coords[len2].push(a[i]);
         }
-    return [d,dd];
+     i++;
+    }
+    if(coords.length===1){
+        type="Polygon";
+    }else{
+        type="MultiPolygon";
+    }
+    return {"type":type,"coordinates":coords};
 }
 function c(a){
 //return true if clockwise
@@ -99,14 +85,13 @@ function c(a){
  var o=0;
 
  while(l>i){
- o+=(a[i][0]*a[i+1][1]-a[i+1][0]*a[i][1]);
-   
-     i++;
+    o+=(a[i+1][0]-a[i][0])*(a[i+1][1]-a[i][0]);
+    i++;
  }
-    return o<=0;
+    return o>=0;
 }  
 if(cb){
- cb(outPut)
+ cb(outPut);
 }else{
 return outPut;  
 }
