@@ -85,10 +85,11 @@ function c(a){
  var o=0;
 
  while(l>i){
-    o+=(a[i+1][0]-a[i][0])*(a[i+1][1]-a[i][0]);
-    i++;
+ o+=(a[i][0]*a[i+1][1]-a[i+1][0]*a[i][1]);
+   
+     i++;
  }
-    return o>=0;
+    return o<=0;
 }  
 if(cb){
  cb(outPut);
