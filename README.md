@@ -3,7 +3,21 @@ esri2geo
 
 Converts ESRI json to geojson, should work with donut polygons as [a tool that esri wrote](https://github.com/Esri/geojson-utils) imlies we can assume holes in donut polygons imidiatly follow their other ring.
 
-But wait there's more! Because all the tools I could find all required installing stuff, I wront my own arcpy tool so that we can convert any arcgis feature thingy.  Only tested in 10.0.
+```javascript
+var geoJSON = toGeoJSON(esriJSON);
+//or
+var geoJSON,cb=function(data){geoJSON=data};
+toGeoJSON(esriJSON,cb);
+//or
+var geoJSON = toGeoJSON("same/origin/url/to/esriJSON");
+//or
+var geoJSON,cb=function(data){geoJSON=data};
+toGeoJSON("same/origin/url/to/esriJSON",cb);
+//fin
+```
+
+Bonus! Because all the tools I could find all required installing stuff, I wront my own arcpy tool so that we can convert any arcgis feature thingy.  Only tested in 10.0.
+
 
 Copyright (c) 2013 Calvin Metcalf
 
