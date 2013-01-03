@@ -1,4 +1,12 @@
 function toGeoJSON(data,cb){
+    if(typeof data === 'string'){
+        if(cb){
+            ajax(data,function(d){toGeoJSON(d,cb)});
+            return;
+        }else{
+            return toGeoJSON(ajax(data));
+        }
+    }
     var outPut = { "type": "FeatureCollection",
   "features": []};
     var fl = data.features.length;
@@ -109,6 +117,54 @@ if(cb){
  cb(outPut);
 }else{
 return outPut;  
+}
+
+
+function ajax(url, cb){
+    if (XMLHttpRequest === undefined) {
+        window.XMLHttpRequest = function() {
+    		try {
+				return new ActiveXObject("Microsoft.XMLHTTP.6.0");
+			}
+			catch  (e1) {
+				try {
+					return new ActiveXObject("Microsoft.XMLHTTP.3.0");
+				}
+				catch (e2) {
+					throw new Error("XMLHttpRequest is not supported");
+				}
+			}
+		};
+	}
+   
+       
+    // the following is from JavaScript: The Definitive Guide
+
+    var response,async,request = new XMLHttpRequest();
+
+    request.onreadystatechange = function() {
+        if (request.readyState === 4 && request.status === 200) {
+            if(JSON) {
+                response = JSON.parse(request.responseText);
+        	} else {
+        		response = eval("("+ request.responseText + ")");
+        	}
+            if(cb){
+           cb(response);
+            }
+        }
+    };
+    if(cb){
+        async=true;
+    }else{
+        async=false;
+    }
+    request.open("GET", url,async);
+    request.send();
+    if(!cb){
+    return response;
+}
+  
 }
 }
 if (typeof module !== "undefined") module.exports = toGeoJSON;
