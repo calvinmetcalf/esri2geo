@@ -10,100 +10,101 @@ def listFields(featureClass):
 def getShp(shp):
     desc = arcpy.Describe(shp)
     return desc.ShapeFieldName
-def parseProp(row,t):
+def parseProp(row,fields):
     out=dict()
-    for e in t:
-        if (t[e] != u'OID') and e != ('Shape_Length' or 'Shape_Area'):
-            if row.getValue(e) is not None and row.getValue(e) != "":
-                out[e]=row.getValue(e)
+    for field in fields:
+        if (fields[field] != u'OID') and field != ('Shape_Length' or 'Shape_Area'):
+            if row.getValue(field) is not None and row.getValue(field) != "":
+                out[field]=row.getValue(field)
     return out
-def parseLine(l):
+def parseLine(line):
     out=[]
-    n=l.count
+    lineCount=line.count
     i=0
-    while i<n:
-        p=l[i]
-        out.append([p.X,p.Y])
-        i=i+1
+    while i<lineCount:
+        pt=line[i]
+        out.append([pt.X,pt.Y])
+        i+=1
     return out
-def parsePoly(l):
+def parsePoly(poly):
     out=[]
-    n=l.count
+    polyCount=poly.count
     i=0
-    while i<n:
-        p=l[i]
-        out.append([p.X,p.Y])
-        i=i+1
+    while i<polyCount:
+        pt=poly[i]
+        out.append([pt.X,pt.Y])
+        i+=1
     return out
 def parseGeo(geometry):
     geo=dict()
-    t=geometry.type
-    if t in ("multipatch", "dimension", "annotation"):
+    geoType=geometry.type
+    if geoType in ("multipatch", "dimension", "annotation"):
         return {}
-    elif t == "point":
+    elif geoType == "point":
         geo["type"]="Point"
         geo["coordinates"]=[geometry.firstPoint.X,geometry.firstPoint.Y]
-    elif t == "multipoint":
+    elif geoType == "multipoint":
         if geometry.pointCount == 1:
             geo["type"]="Point"
             geo["coordinates"]=[geometry.firstPoint.X,geometry.firstPoint.Y]
         else:
             geo["type"]="MultiPoint"
-            mp=[]
-            n=geometry.pointCount
+            points=[]
+            pointCount=geometry.pointCount
             i=0
-            while i<n:
-                p=geometry.getPart(i)
-                mp.append([p.X,p.Y])
-            geo["coordinates"]=mp
-    elif t == "polyline":
+            while i<pointCount:
+                point=geometry.getPart(i)
+                points.append([point.X,point.Y])
+                i+=1
+            geo["coordinates"]=points
+    elif geoType == "polyline":
         if geometry.partCount==1:
             geo["type"]="LineString"
             geo["coordinates"]=parseLine(geometry.getPart(0))
         else:
             geo["type"]="MultiLineString"
-            c=[]
-            n=geometry.partCount
+            lines=[]
+            lineCount=geometry.partCount
             i=0
-            while i<n:
-                c.append(parseLine(geometry.getPart(i)))
-                i=i+1
-            geo["coordinates"]=c
-    elif t == "polygon":
+            while i<lineCount:
+                lines.append(parseLine(geometry.getPart(i)))
+                i+=1
+            geo["coordinates"]=lines
+    elif geoType == "polygon":
         if geometry.partCount==1:
             geo["type"]="Polygon"
             geo["coordinates"]=[parsePoly(geometry.getPart(0))]
         else:
             geo["type"]="MultiPolygon"
-            c=[]
-            n=geometry.partCount
+            polys=[]
+            polyCount=geometry.partCount
             i=0
-            while i<n:
-                c.append(parsePoly(geometry.getPart(i)))
-                i=i+1
-            geo["coordinates"]=c
+            while i<polyCount:
+                polys.append(parsePoly(geometry.getPart(i)))
+                i+=1
+            geo["coordinates"]=polys
     return geo
 def toGeo(featureClass,j):
     out=dict()
     out["type"]= "FeatureCollection"
-    fl=listFields(featureClass)
-    f=[]
+    fields=listFields(featureClass)
+    features=[]
     sr=arcpy.SpatialReference()
     sr.loadFromString(wgs84)
     rows=arcpy.SearchCursor(featureClass,"",sr)
     shp=getShp(featureClass)
-    del fl[shp]
+    del fields[shp]
     try:
         for row in rows:
             fc={"type": "Feature"}
             fc["geometry"]=parseGeo(row.getValue(shp))
-            fc["properties"]=parseProp(row,fl)
-            f.append(fc)
+            fc["properties"]=parseProp(row,fields)
+            features.append(fc)
     except:
         print "OH SNAP!"
     finally:
         del row
         del rows
-    out["features"]=f
+    out["features"]=features
     json.dump(out,open(j,"w"))
 toGeo(arcpy.GetParameterAsText(0),arcpy.GetParameterAsText(1))
