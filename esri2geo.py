@@ -1,22 +1,22 @@
 import arcpy,json
 wgs84="GEOGCS['GCS_WGS_1984',DATUM['D_WGS_1984',SPHEROID['WGS_1984',6378137.0,298.257223563]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]];-400 -400 1000000000;-100000 10000;-100000 10000;8.98315284119522E-09;0.001;0.001;IsHighPrecision"
 
-def listFields(d):
-    flds=arcpy.ListFields(d)
+def listFields(featureClass):
+    fields=arcpy.ListFields(featureClass)
     out=dict()
-    for f in flds:
-        out[f.name]=f.type
+    for fld in fields:
+        out[fld.name]=fld.type
     return out
 def getShp(shp):
     desc = arcpy.Describe(shp)
     return desc.ShapeFieldName
 def parseProp(row,t):
-    p=dict()
+    out=dict()
     for e in t:
         if (t[e] != u'OID') and e != ('Shape_Length' or 'Shape_Area'):
             if row.getValue(e) is not None and row.getValue(e) != "":
-                p[e]=row.getValue(e)
-    return p
+                out[e]=row.getValue(e)
+    return out
 def parseLine(l):
     out=[]
     n=l.count
@@ -83,15 +83,15 @@ def parseGeo(g):
                 i=i+1
             geo["coordinates"]=c
     return geo
-def toGeo(d,j):
+def toGeo(featureClass,j):
     out=dict()
     out["type"]= "FeatureCollection"
-    fl=listFields(d)
+    fl=listFields(featureClass)
     f=[]
     sr=arcpy.SpatialReference()
     sr.loadFromString(wgs84)
-    rows=arcpy.SearchCursor(d,"",sr)
-    shp=getShp(d)
+    rows=arcpy.SearchCursor(featureClass,"",sr)
+    shp=getShp(featureClass)
     del fl[shp]
     try:
         for row in rows:
