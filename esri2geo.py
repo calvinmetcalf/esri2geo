@@ -35,51 +35,51 @@ def parsePoly(l):
         out.append([p.X,p.Y])
         i=i+1
     return out
-def parseGeo(g):
+def parseGeo(geometry):
     geo=dict()
-    t=g.type
+    t=geometry.type
     if t in ("multipatch", "dimension", "annotation"):
         return {}
     elif t == "point":
         geo["type"]="Point"
-        geo["coordinates"]=[g.firstPoint.X,g.firstPoint.Y]
+        geo["coordinates"]=[geometry.firstPoint.X,geometry.firstPoint.Y]
     elif t == "multipoint":
-        if g.pointCount == 1:
+        if geometry.pointCount == 1:
             geo["type"]="Point"
-            geo["coordinates"]=[g.firstPoint.X,g.firstPoint.Y]
+            geo["coordinates"]=[geometry.firstPoint.X,geometry.firstPoint.Y]
         else:
             geo["type"]="MultiPoint"
             mp=[]
-            n=g.pointCount
+            n=geometry.pointCount
             i=0
             while i<n:
-                p=g.getPart(i)
+                p=geometry.getPart(i)
                 mp.append([p.X,p.Y])
             geo["coordinates"]=mp
     elif t == "polyline":
-        if g.partCount==1:
+        if geometry.partCount==1:
             geo["type"]="LineString"
-            geo["coordinates"]=parseLine(g.getPart(0))
+            geo["coordinates"]=parseLine(geometry.getPart(0))
         else:
             geo["type"]="MultiLineString"
             c=[]
-            n=g.partCount
+            n=geometry.partCount
             i=0
             while i<n:
-                c.append(parseLine(g.getPart(i)))
+                c.append(parseLine(geometry.getPart(i)))
                 i=i+1
             geo["coordinates"]=c
     elif t == "polygon":
-        if g.partCount==1:
+        if geometry.partCount==1:
             geo["type"]="Polygon"
-            geo["coordinates"]=[parsePoly(g.getPart(0))]
+            geo["coordinates"]=[parsePoly(geometry.getPart(0))]
         else:
             geo["type"]="MultiPolygon"
             c=[]
-            n=g.partCount
+            n=geometry.partCount
             i=0
             while i<n:
-                c.append(parsePoly(g.getPart(i)))
+                c.append(parsePoly(geometry.getPart(i)))
                 i=i+1
             geo["coordinates"]=c
     return geo
