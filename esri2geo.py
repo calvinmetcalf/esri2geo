@@ -1,4 +1,7 @@
-import arcpy,json
+import arcpy,json,os, datetime
+toGeoJSON(arcpy.GetParameterAsText(0),arcpy.GetParameterAsText(1))
+#uncomment the following line and comment the previus line to use in the console
+#arcpy.env.workspace = os.getcwd()
 wgs84="GEOGCS['GCS_WGS_1984',DATUM['D_WGS_1984',SPHEROID['WGS_1984',6378137.0,298.257223563]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]];-400 -400 1000000000;-100000 10000;-100000 10000;8.98315284119522E-09;0.001;0.001;IsHighPrecision"
 
 def listFields(featureClass):
@@ -13,9 +16,15 @@ def getShp(shp):
 def parseProp(row,fields):
     out=dict()
     for field in fields:
-        if (fields[field] != u'OID') and field != ('Shape_Length' or 'Shape_Area'):
-            if row.getValue(field) is not None and row.getValue(field) != "":
-                out[field]=row.getValue(field)
+        if (fields[field] != u'OID') and field != ('Shape_Length' or 'Shape_Area') and row.getValue(field) is not None:
+            if fields[field] == "Date":
+                value = str(row.getValue(field).date())
+            elif fields[field] == "String":
+                value = row.getValue(field).strip()
+            else:
+                value = row.getValue(field)
+            if value != "":
+                out[field]=value
     return out
 def parseLine(line):
     out=[]
@@ -32,7 +41,8 @@ def parsePoly(poly):
     i=0
     while i<polyCount:
         pt=poly[i]
-        out.append([pt.X,pt.Y])
+        if pt:
+            out.append([pt.X,pt.Y])
         i+=1
     return out
 def parseGeo(geometry):
@@ -84,7 +94,7 @@ def parseGeo(geometry):
                 i+=1
             geo["coordinates"]=polys
     return geo
-def toGeo(featureClass,j):
+def toDict(featureClass):
     out=dict()
     out["type"]= "FeatureCollection"
     fields=listFields(featureClass)
@@ -100,11 +110,12 @@ def toGeo(featureClass,j):
             fc["geometry"]=parseGeo(row.getValue(shp))
             fc["properties"]=parseProp(row,fields)
             features.append(fc)
-    except:
-        print "OH SNAP!"
+    except Exception as e:
+        print("OH SNAP! " + str(e))
     finally:
         del row
         del rows
     out["features"]=features
-    json.dump(out,open(j,"w"))
-toGeo(arcpy.GetParameterAsText(0),arcpy.GetParameterAsText(1))
+    return out
+def toGeoJSON(featureClass, outJSON):
+    json.dump(toDict(featureClass),open(outJSON,"w"))
