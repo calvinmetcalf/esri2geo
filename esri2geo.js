@@ -120,6 +120,7 @@ function toGeoJSON(data,cb){
 	}
 
 	function ajax(url, cb){
+		var request;
 		if (XMLHttpRequest === undefined) {
 			if(window){
 				window.XMLHttpRequest = function() {
@@ -137,20 +138,24 @@ function toGeoJSON(data,cb){
 				};
 			}else if(typeof module !== "undefined"){
 				if(cb){
-				
+					request = require("request");
+					request(url,{json:true},function(e,r,b){
+						cb(e,b);
+					});
+					return;
 				}else{
 					return "no async sorry";
 				}
 			}
 		}
 		// the following is from JavaScript: The Definitive Guide
-		var response,async,request = new XMLHttpRequest();
-		request.onreadystatechange = function() {
-			if (request.readyState === 4 && request.status === 200) {
+		var response,async,req = new XMLHttpRequest();
+		req.onreadystatechange = function() {
+			if (req.readyState === 4 && req.status === 200) {
 				if(JSON) {
-					response = JSON.parse(request.responseText);
+					response = JSON.parse(req.responseText);
 				} else {
-					response = eval("("+ request.responseText + ")");
+					response = eval("("+ req.responseText + ")");
 				}
 				if(cb){
 					cb(response);
@@ -162,8 +167,8 @@ function toGeoJSON(data,cb){
 		}else{
 			async=false;
 		}
-		request.open("GET", url,async);
-		request.send();
+		req.open("GET", url,async);
+		req.send();
 		if(!cb){
 			return response;
 		}
