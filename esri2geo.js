@@ -1,7 +1,7 @@
 function toGeoJSON(data,cb){
 	if(typeof data === 'string'){
 		if(cb){
-			ajax(data,function(d){toGeoJSON(d,cb)});
+			ajax(data,function(err, d){toGeoJSON(d,cb)});
 			return;
 		}else{
 			return toGeoJSON(ajax(data));
@@ -114,13 +114,24 @@ function toGeoJSON(data,cb){
 		return p;
 	}
 	if(cb){
-		cb(outPut);
+		cb(null,outPut);
 	}else{
 		return outPut;	
 	}
 
 	function ajax(url, cb){
 		var request;
+		if(typeof module !== "undefined"){
+			if(cb){
+				request = require("request");
+				request(url,{json:true},function(e,r,b){
+					cb(e,b);
+				});
+				return;
+			}else{
+				return "no async sorry";
+			}
+		}
 		if (XMLHttpRequest === undefined) {
 			if(window){
 				window.XMLHttpRequest = function() {
@@ -136,16 +147,6 @@ function toGeoJSON(data,cb){
 						}
 					}
 				};
-			}else if(typeof module !== "undefined"){
-				if(cb){
-					request = require("request");
-					request(url,{json:true},function(e,r,b){
-						cb(e,b);
-					});
-					return;
-				}else{
-					return "no async sorry";
-				}
 			}
 		}
 		// the following is from JavaScript: The Definitive Guide
@@ -158,7 +159,7 @@ function toGeoJSON(data,cb){
 					response = eval("("+ req.responseText + ")");
 				}
 				if(cb){
-					cb(response);
+					cb(null,response);
 				}
 			}
 		};
