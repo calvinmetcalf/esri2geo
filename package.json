@@ -1,7 +1,30 @@
 {
   "name": "esri2geo",
-  "version": "0.0.1",
+  "version": "0.1.2",
   "description": "convert esri JSON to geojson",
+  "keywords": [
+    "esri",
+    "arc",
+    "geojson"
+  ],
+  "author": "Calvin Metcalf <calvin.metalf@gmail.com> (https://github.com/calvinmetcalf)",
+  "bugs": {
+    "url": "https://github.com/calvinmetcalf/esri2geo/issues"
+  },
+  "repositories": [
+    {
+      "type": "git",
+      "url": "https://github.com/calvinmetcalf/esri2geo.git"
+    }
+  ],
+  "dependencies": {
+    "request": "2.x"
+  },
   "main": "esri2geo.js",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/calvinmetcalf/esri2geo.git"
+  }
 }
