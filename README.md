@@ -14,6 +14,18 @@ toGeoJSON("same/origin/url/to/esriJSON",cb);
 //fin
 ```
 
+you can install on npm:
+
+```shell
+npm install esri2geo
+```
+
+from inside node:
+
+```javascript
+var esri2geo = require("esri2geo");
+```
+
 Bonus! Because all the tools I could find all required installing stuff, I wront my own arcpy tool so that we can convert any arcgis feature thingy.  Only tested in 10.0.
 
 _Disclaimer:_ not endorsed by, or have anything to do with ESRI.
