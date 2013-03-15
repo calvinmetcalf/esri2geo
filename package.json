@@ -1,26 +1,33 @@
 {
-    "name": "esri2geo",
-    "version": "0.1.0",
-    "description": "convert esri JSON to geojson",
-    "keywords": ["esri","arc","geojson"],
-    "author": 
+  "name": "esri2geo",
+  "version": "0.1.0",
+  "description": "convert esri JSON to geojson",
+  "keywords": [
+    "esri",
+    "arc",
+    "geojson"
+  ],
+  "author": "Calvin Metcalf <calvin.metalf@gmail.com> (https://github.com/calvinmetcalf)",
+  "bugs": {
+    "url": "https://github.com/calvinmetcalf/esri2geo/issues"
+  },
+  "repositories": [
     {
-        "name" : "Calvin Metcalf",
-        "email": "calvin.metalf@gmail.com",
-        "web": "https://github.com/calvinmetcalf"
-    },
-    "bugs": {
-        "web": "https://github.com/calvinmetcalf/esri2geo/issues"
-    },
-    "repositories": [
-        {
-            "type": "git",
-            "url": "https://github.com/calvinmetcalf/esri2geo.git"
-        }
-    ],
-    "dependencies": {
-        "request":"2.x"
-    },
-    "main": "esri2geo.js",
-    "license": "MIT"
+      "type": "git",
+      "url": "https://github.com/calvinmetcalf/esri2geo.git"
+    }
+  ],
+  "dependencies": {
+    "request": "2.x"
+  },
+  "main": "esri2geo.js",
+  "license": "MIT",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/calvinmetcalf/esri2geo.git"
+  }
 }
