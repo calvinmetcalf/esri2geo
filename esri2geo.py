@@ -1,6 +1,5 @@
 import arcpy,json,os, datetime
-toGeoJSON(arcpy.GetParameterAsText(0),arcpy.GetParameterAsText(1))
-#uncomment the following line and comment the previus line to use in the console
+#uncomment the following line and comment the final line to use in the console
 #arcpy.env.workspace = os.getcwd()
 wgs84="GEOGCS['GCS_WGS_1984',DATUM['D_WGS_1984',SPHEROID['WGS_1984',6378137.0,298.257223563]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]];-400 -400 1000000000;-100000 10000;-100000 10000;8.98315284119522E-09;0.001;0.001;IsHighPrecision"
 
@@ -119,3 +118,4 @@ def toDict(featureClass):
     return out
 def toGeoJSON(featureClass, outJSON):
     json.dump(toDict(featureClass),open(outJSON,"w"))
+toGeoJSON(arcpy.GetParameterAsText(0),arcpy.GetParameterAsText(1))
