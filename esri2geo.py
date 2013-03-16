@@ -1,4 +1,4 @@
-import arcpy,json,os, datetime
+import arcpy,json,os,csv,datetime
 #uncomment the following line and comment the final line to use in the console
 #arcpy.env.workspace = os.getcwd()
 wgs84="GEOGCS['GCS_WGS_1984',DATUM['D_WGS_1984',SPHEROID['WGS_1984',6378137.0,298.257223563]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]];-400 -400 1000000000;-100000 10000;-100000 10000;8.98315284119522E-09;0.001;0.001;IsHighPrecision"
@@ -93,10 +93,15 @@ def parseGeo(geometry):
                 i+=1
             geo["coordinates"]=polys
     return geo
-def toGeoJSON(featureClass, outJSON):
+def toGeoJSON(featureClass, outJSON, fileType="GeoJSON"):
     out=open(outJSON,"ab")
-    out.write("""{"type":"FeatureCollection",features:[""")
     fields=listFields(featureClass)
+    if fileType=="GeoJSON":
+        out.write("""{"type":"FeatureCollection",features:[""")
+    elif fileType=="csv":
+        fieldNames = fields.keys()
+        fieldNames.append("geometry")
+        outCSV=csv.DictWriter(out,fieldNames,extrasaction='ignore')
     sr=arcpy.SpatialReference()
     sr.loadFromString(wgs84)
     rows=arcpy.SearchCursor(featureClass,"",sr)
@@ -108,16 +113,21 @@ def toGeoJSON(featureClass, outJSON):
             fc={"type": "Feature"}
             fc["geometry"]=parseGeo(row.getValue(shp))
             fc["properties"]=parseProp(row,fields)
-            if first:
-                first=False
-                out.write(str(fc))
-            else:
-                out.write(","+str(fc))
+            if fileType=="GeoJSON":
+                if first:
+                    first=False
+                    out.write(str(fc))
+                else:
+                    out.write(","+str(fc))
+            elif fileType=="csv":
+                fc["properties"]["geometry"]=str(fc["geometry"])
+                outCSV.writerow(fc["properties"]["geometry"])
     except Exception as e:
         print("OH SNAP! " + str(e))
     finally:
         del row
         del rows
-        out.write("""]}""")
+        if fileType=="GeoJSON":
+            out.write("""]}""")
         out.close()
 toGeoJSON(arcpy.GetParameterAsText(0),arcpy.GetParameterAsText(1))
