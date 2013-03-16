@@ -93,29 +93,31 @@ def parseGeo(geometry):
                 i+=1
             geo["coordinates"]=polys
     return geo
-def toDict(featureClass):
-    out=dict()
-    out["type"]= "FeatureCollection"
+def toGeoJSON(featureClass, outJSON):
+    out=open(outJSON,"ab")
+    out.write("""{"type":"FeatureCollection",features:[""")
     fields=listFields(featureClass)
-    features=[]
     sr=arcpy.SpatialReference()
     sr.loadFromString(wgs84)
     rows=arcpy.SearchCursor(featureClass,"",sr)
     shp=getShp(featureClass)
     del fields[shp]
+    first = True
     try:
         for row in rows:
             fc={"type": "Feature"}
             fc["geometry"]=parseGeo(row.getValue(shp))
             fc["properties"]=parseProp(row,fields)
-            features.append(fc)
+            if first:
+                first=False
+                out.write(str(fc))
+            else:
+                out.write(","+str(fc))
     except Exception as e:
         print("OH SNAP! " + str(e))
     finally:
         del row
         del rows
-    out["features"]=features
-    return out
-def toGeoJSON(featureClass, outJSON):
-    json.dump(toDict(featureClass),open(outJSON,"w"))
+        out.write("""]}""")
+        out.close()
 toGeoJSON(arcpy.GetParameterAsText(0),arcpy.GetParameterAsText(1))
