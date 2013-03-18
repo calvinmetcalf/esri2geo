@@ -94,14 +94,25 @@ def parseGeo(geometry):
             geo["coordinates"]=polys
     return geo
 def toGeoJSON(featureClass, outJSON, fileType="GeoJSON"):
-    out=open(outJSON,"ab")
+    fileType = fileType.lower()
+    if outJSON[-len(fileType)-1:]!="."+fileType:
+        outJSON = outJSON+"."+fileType
+    out=open(outJSON,"wb")
     fields=listFields(featureClass)
-    if fileType=="GeoJSON":
+    if fileType=="geojson":
         out.write("""{"type":"FeatureCollection",features:[""")
     elif fileType=="csv":
-        fieldNames = fields.keys()
+        fieldNames = []
+        for field in fields:
+            if (fields[field] != u'OID') and field.lower() not in ('shape_length','shape_area','shape'):
+                fieldNames.append(field)
+        arcpy.AddMessage(fieldNames)
         fieldNames.append("geometry")
         outCSV=csv.DictWriter(out,fieldNames,extrasaction='ignore')
+        fieldObject = {}
+        for fieldName in fieldNames:
+            fieldObject[fieldName]=fieldName
+        outCSV.writerow(fieldObject)
     sr=arcpy.SpatialReference()
     sr.loadFromString(wgs84)
     rows=arcpy.SearchCursor(featureClass,"",sr)
@@ -113,21 +124,22 @@ def toGeoJSON(featureClass, outJSON, fileType="GeoJSON"):
             fc={"type": "Feature"}
             fc["geometry"]=parseGeo(row.getValue(shp))
             fc["properties"]=parseProp(row,fields)
-            if fileType=="GeoJSON":
+            if fileType=="geojson":
                 if first:
                     first=False
-                    out.write(str(fc))
+                    json.dump(fc,out)
                 else:
-                    out.write(","+str(fc))
+                    out.write(",")
+                    json.dump(fc,out)
             elif fileType=="csv":
                 fc["properties"]["geometry"]=str(fc["geometry"])
-                outCSV.writerow(fc["properties"]["geometry"])
+                outCSV.writerow(fc["properties"])
     except Exception as e:
         print("OH SNAP! " + str(e))
     finally:
         del row
         del rows
-        if fileType=="GeoJSON":
+        if fileType=="geojson":
             out.write("""]}""")
         out.close()
-toGeoJSON(arcpy.GetParameterAsText(0),arcpy.GetParameterAsText(1))
+toGeoJSON(arcpy.GetParameterAsText(0),arcpy.GetParameterAsText(1),arcpy.GetParameterAsText(2))
