@@ -12,6 +12,10 @@ def listFields(featureClass):
 def getShp(shp):
     desc = arcpy.Describe(shp)
     return desc.ShapeFieldName
+def getOID(fields):
+    for key, value in fields.items():
+        if value== u'OID':
+            return key
 def parseProp(row,fields):
     out=dict()
     for field in fields:
@@ -111,14 +115,15 @@ def toGeoJSON(featureClass, outJSON, fileType="GeoJSON"):
         outJSON = outJSON+"."+fileType
     out=open(outJSON,"wb")
     fields=listFields(featureClass)
+    shp=getShp(featureClass)
+    oid=getOID(fields)
     if fileType=="geojson":
         out.write("""{"type":"FeatureCollection",features:[""")
     elif fileType=="csv":
         fieldNames = []
         for field in fields:
-            if (fields[field] != u'OID') and field.lower() not in ('shape_length','shape_area','shape'):
+            if (fields[field] != u'OID') and field.lower() not in ('shape_length','shape_area',shp.lower()):
                 fieldNames.append(field)
-        
         fieldNames.append("geometry")
         outCSV=csv.DictWriter(out,fieldNames,extrasaction='ignore')
         fieldObject = {}
@@ -130,13 +135,13 @@ def toGeoJSON(featureClass, outJSON, fileType="GeoJSON"):
     sr=arcpy.SpatialReference()
     sr.loadFromString(wgs84)
     rows=arcpy.SearchCursor(featureClass,"",sr)
-    shp=getShp(featureClass)
     del fields[shp]
     first = True
     try:
         for row in rows:
             fc={"type": "Feature"}
             fc["geometry"]=parseGeo(row.getValue(shp))
+            fc["id"]=row.getValue(oid)
             if len(fc["geometry"]["coordinates"])==0:
                 continue
             fc["properties"]=parseProp(row,fields)
