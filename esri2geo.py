@@ -42,17 +42,17 @@ def parsePoly(poly):
     out=[]
     polyCount=poly.count
     i=0
-    donut=[]
+    polys=[[],[]]
     while i<polyCount:
         pt=poly[i]
         if pt:
             out.append([pt.X,pt.Y])
         else:
-            donut.append(out) if len(out)>3 else True
+            polys[0].append(out) if len(out)>3 else polys[1].append(out[0])
             out=[]
         i+=1
-    donut.append(out) if len(out)>3 else True
-    return donut
+    polys[0].append(out) if len(out)>3 else polys[1].append(out[0])
+    return polys
 def parseGeo(geometry):
     geo=dict()
     geoType=geometry.type
@@ -95,18 +95,40 @@ def parseGeo(geometry):
         else:
             geo["type"]="MultiPolygon"
             polys=[]
+            points=[]
             polyCount=geometry.partCount
             i=0
             while i<polyCount:
                 polyPart = parsePoly(geometry.getPart(i))
-                if polyPart:
-                    polys.append(polyPart)
+                if polyPart[0]:
+                    polys.append(polyPart[0])
+                if polyPart[1]:
+                    points.append(polyPart[1])
                 i+=1
-            geo["coordinates"]=polys
-            if len(geo["coordinates"])==1:
-                geo["coordinates"]=geo["coordinates"][0]
-                geo["type"]="Polygon"
-    return geo
+            if polys:
+                geo["coordinates"]=polys
+                if len(geo["coordinates"])==1:
+                    geo["coordinates"]=geo["coordinates"][0]
+                    geo["type"]="Polygon"
+            if points:
+                pointGeo={}
+                pointGeo["coordinates"]=points
+                if len(pointGeo["coordinates"])==1:
+                    pointGeo["coordinates"]=pointGeo["coordinates"][0]
+                    pointGeo["type"]="Point"
+                else:
+                    pointGeo["type"]="MultiPoint"
+            if polys and not points:
+                return geo
+            elif points and not polys:
+                return pointGeo
+            elif points and polys:
+                out = {}
+                out["type"]="GeometryCollection"
+                out["geometries"]=[geo,pointGeo]
+                return out
+            else:
+                return None
 def toGeoJSON(featureClass, outJSON, fileType="GeoJSON"):
     fileType = fileType.lower()
     featureCount = int(arcpy.GetCount_management(featureClass).getOutput(0))
