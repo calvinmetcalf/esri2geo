@@ -15,7 +15,7 @@ def getShp(shp):
 def parseProp(row,fields):
     out=dict()
     for field in fields:
-        if (fields[field] != u'OID') and field != ('Shape_Length' or 'Shape_Area') and row.getValue(field) is not None:
+        if (fields[field] != u'OID') and field.lower() not in ('shape_length','shape_area','shape') and row.getValue(field) is not None:
             if fields[field] == "Date":
                 value = str(row.getValue(field).date())
             elif fields[field] == "String":
@@ -38,12 +38,17 @@ def parsePoly(poly):
     out=[]
     polyCount=poly.count
     i=0
+    donut=[]
     while i<polyCount:
         pt=poly[i]
         if pt:
             out.append([pt.X,pt.Y])
+        else:
+            donut.append(out)
+            out=[]
         i+=1
-    return out
+    donut.append(out)
+    return donut
 def parseGeo(geometry):
     geo=dict()
     geoType=geometry.type
@@ -82,7 +87,7 @@ def parseGeo(geometry):
     elif geoType == "polygon":
         if geometry.partCount==1:
             geo["type"]="Polygon"
-            geo["coordinates"]=[parsePoly(geometry.getPart(0))]
+            geo["coordinates"]=parsePoly(geometry.getPart(0))
         else:
             geo["type"]="MultiPolygon"
             polys=[]
@@ -95,6 +100,7 @@ def parseGeo(geometry):
     return geo
 def toGeoJSON(featureClass, outJSON, fileType="GeoJSON"):
     fileType = fileType.lower()
+    featureCount = int(arcpy.GetCount_management(featureClass).getOutput(0))
     if outJSON[-len(fileType)-1:]!="."+fileType:
         outJSON = outJSON+"."+fileType
     out=open(outJSON,"wb")
