@@ -44,10 +44,10 @@ def parsePoly(poly):
         if pt:
             out.append([pt.X,pt.Y])
         else:
-            donut.append(out)
+            donut.append(out) if len(out)>2 else True
             out=[]
         i+=1
-    donut.append(out)
+    donut.append(out) if len(out)>2 else True
     return donut
 def parseGeo(geometry):
     geo=dict()
@@ -94,7 +94,9 @@ def parseGeo(geometry):
             polyCount=geometry.partCount
             i=0
             while i<polyCount:
-                polys.append(parsePoly(geometry.getPart(i)))
+                polyPart = parsePoly(geometry.getPart(i))
+                if polyPart:
+                    polys.append(polyPart)
                 i+=1
             geo["coordinates"]=polys
     return geo
@@ -131,6 +133,8 @@ def toGeoJSON(featureClass, outJSON, fileType="GeoJSON"):
         for row in rows:
             fc={"type": "Feature"}
             fc["geometry"]=parseGeo(row.getValue(shp))
+            if len(fc["geometry"]["coordinates"])==0:
+                continue
             fc["properties"]=parseProp(row,fields)
             if fileType=="geojson":
                 if first:
