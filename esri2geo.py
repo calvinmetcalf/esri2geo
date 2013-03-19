@@ -99,6 +99,9 @@ def parseGeo(geometry):
                     polys.append(polyPart)
                 i+=1
             geo["coordinates"]=polys
+            if len(geo["coordinates"])==1:
+                geo["coordinates"]=geo["coordinates"][0]
+                geo["type"]="Polygon"
     return geo
 def toGeoJSON(featureClass, outJSON, fileType="GeoJSON"):
     fileType = fileType.lower()
