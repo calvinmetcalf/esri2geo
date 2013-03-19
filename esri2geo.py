@@ -106,6 +106,7 @@ def parseGeo(geometry):
 def toGeoJSON(featureClass, outJSON, fileType="GeoJSON"):
     fileType = fileType.lower()
     featureCount = int(arcpy.GetCount_management(featureClass).getOutput(0))
+    #arcpy.gMessage("parsing "+str(featureCount)+"features")
     if outJSON[-len(fileType)-1:]!="."+fileType:
         outJSON = outJSON+"."+fileType
     out=open(outJSON,"wb")
@@ -117,7 +118,7 @@ def toGeoJSON(featureClass, outJSON, fileType="GeoJSON"):
         for field in fields:
             if (fields[field] != u'OID') and field.lower() not in ('shape_length','shape_area','shape'):
                 fieldNames.append(field)
-        arcpy.AddMessage(fieldNames)
+        
         fieldNames.append("geometry")
         outCSV=csv.DictWriter(out,fieldNames,extrasaction='ignore')
         fieldObject = {}
