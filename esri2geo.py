@@ -48,10 +48,10 @@ def parsePoly(poly):
         if pt:
             out.append([pt.X,pt.Y])
         else:
-            donut.append(out) if len(out)>2 else True
+            donut.append(out) if len(out)>3 else True
             out=[]
         i+=1
-    donut.append(out) if len(out)>2 else True
+    donut.append(out) if len(out)>3 else True
     return donut
 def parseGeo(geometry):
     geo=dict()
