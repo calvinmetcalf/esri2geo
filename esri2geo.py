@@ -113,6 +113,8 @@ def toGeoJSON(featureClass, outJSON, fileType="GeoJSON"):
         for fieldName in fieldNames:
             fieldObject[fieldName]=fieldName
         outCSV.writerow(fieldObject)
+    elif fileType=="json":
+        out.write("""{"rows":[""")
     sr=arcpy.SpatialReference()
     sr.loadFromString(wgs84)
     rows=arcpy.SearchCursor(featureClass,"",sr)
@@ -134,12 +136,20 @@ def toGeoJSON(featureClass, outJSON, fileType="GeoJSON"):
             elif fileType=="csv":
                 fc["properties"]["geometry"]=str(fc["geometry"])
                 outCSV.writerow(fc["properties"])
+            elif fileType=="json":
+                fc["properties"]["geometry"]=str(fc["geometry"])
+                if first:
+                    first=False
+                    json.dump(fc["properties"],out)
+                else:
+                    out.write(",")
+                    json.dump(fc["properties"],out)
     except Exception as e:
         print("OH SNAP! " + str(e))
     finally:
         del row
         del rows
-        if fileType=="geojson":
+        if fileType=="geojson" or fileType=="json":
             out.write("""]}""")
         out.close()
 toGeoJSON(arcpy.GetParameterAsText(0),arcpy.GetParameterAsText(1),arcpy.GetParameterAsText(2))
