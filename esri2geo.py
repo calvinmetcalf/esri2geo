@@ -48,17 +48,13 @@ def parsePoly(poly):
         if pt:
             out.append([pt.X,pt.Y])
         else:
-            if len(out)>3:
-                polys.append(out)
-            elif i==0:
-                return ["point",out[0]]
+            polys.append(out)
             out=[]
         i+=1
-    if len(out)>3:
-        polys.append(out)
-    elif i==0:
-        return ["point",out[0]]
-    return ["poly",polys]
+    polys.append(out)
+    if len(polys[0])<4:
+        return ["Point",polys[0][0]]
+    return ["Polygon",polys]
 def parseGeo(geometry):
     geo=dict()
     geoType=geometry.type
@@ -97,12 +93,9 @@ def parseGeo(geometry):
     elif geoType == "polygon":
         if geometry.partCount==1:
             outPoly = parsePoly(geometry.getPart(0))
-            if outPoly[0]=="poly":
-                geo["type"]="Polygon"
-                geo["coordinates"]=outPoly[1]
-            elif outPoly[1]=="point":
-                geo["type"]="Point"
-                geo["coordinates"]=outPoly[1]
+            geo["type"]=outPoly[0]
+            geo["coordinates"]=outPoly[1]
+            return geo
         else:
             geo["type"]="MultiPolygon"
             polys=[]
@@ -111,9 +104,9 @@ def parseGeo(geometry):
             i=0
             while i<polyCount:
                 polyPart = parsePoly(geometry.getPart(i))
-                if polyPart[0]=="poly":
+                if polyPart[0]=="Polygon":
                     polys.append(polyPart[1])
-                if polyPart[0]=="point":
+                if polyPart[0]=="Point":
                     points.append(polyPart[1])
                 i+=1
             if polys:
@@ -140,10 +133,16 @@ def parseGeo(geometry):
                 return out
             else:
                 return None
-def toGeoJSON(featureClass, outJSON, fileType="GeoJSON"):
-    fileType = fileType.lower()
+def toGeoJSON(featureClass, outJSON,includeGeometry="true"):
+    includeGeometry = (includeGeometry=="true")
+    if outJSON[-8:].lower()==".geojson":
+        fileType = "geojson"
+    elif outJSON[-5:].lower()==".json":
+        fileType = "json"
+    elif outJSON[-4:].lower()==".csv":
+        fileType = "csv"
     featureCount = int(arcpy.GetCount_management(featureClass).getOutput(0))
-    #arcpy.gMessage("parsing "+str(featureCount)+"features")
+    arcpy.AddMessage("Found "+str(featureCount)+" features")
     if outJSON[-len(fileType)-1:]!="."+fileType:
         outJSON = outJSON+"."+fileType
     out=open(outJSON,"wb")
@@ -152,12 +151,15 @@ def toGeoJSON(featureClass, outJSON, fileType="GeoJSON"):
     oid=getOID(fields)
     if fileType=="geojson":
         out.write("""{"type":"FeatureCollection","features":[""")
+        if not includeGeometry:
+            arcpy.AddMessage("it's geojson, we have to include the geometry")
     elif fileType=="csv":
         fieldNames = []
         for field in fields:
             if (fields[field] != u'OID') and field.lower() not in ('shape_length','shape_area',shp.lower()):
                 fieldNames.append(field)
-        fieldNames.append("geometry")
+        if includeGeometry:
+            fieldNames.append("geometry")
         outCSV=csv.DictWriter(out,fieldNames,extrasaction='ignore')
         fieldObject = {}
         for fieldName in fieldNames:
@@ -170,12 +172,15 @@ def toGeoJSON(featureClass, outJSON, fileType="GeoJSON"):
     rows=arcpy.SearchCursor(featureClass,"",sr)
     del fields[shp]
     first = True
+    i=0
     try:
         for row in rows:
+            i+=1
+            arcpy.AddMessage("on "+str(i)+" of " + str(featureCount))
             fc={"type": "Feature"}
             fc["geometry"]=parseGeo(row.getValue(shp))
             fc["id"]=row.getValue(oid)
-            if len(fc["geometry"]["coordinates"])==0:
+            if fc["geometry"] is None:
                 continue
             fc["properties"]=parseProp(row,fields)
             if fileType=="geojson":
@@ -186,10 +191,12 @@ def toGeoJSON(featureClass, outJSON, fileType="GeoJSON"):
                     out.write(",")
                     json.dump(fc,out)
             elif fileType=="csv":
-                fc["properties"]["geometry"]=str(fc["geometry"])
+                if includeGeometry:
+                    fc["properties"]["geometry"]=str(fc["geometry"])
                 outCSV.writerow(fc["properties"])
             elif fileType=="json":
-                fc["properties"]["geometry"]=str(fc["geometry"])
+                if includeGeometry:
+                    fc["properties"]["geometry"]=str(fc["geometry"])
                 if first:
                     first=False
                     json.dump(fc["properties"],out)
