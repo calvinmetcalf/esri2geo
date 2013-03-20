@@ -32,12 +32,14 @@ def parseProp(row,fields):
 def parseLine(line):
     out=[]
     lineCount=line.count
+    if lineCount ==1:
+        return ["Point",[line[0].X,line[0].Y]]
     i=0
     while i<lineCount:
         pt=line[i]
         out.append([pt.X,pt.Y])
         i+=1
-    return out
+    return ["LineString",out]
 def parsePoly(poly):
     out=[]
     polyCount=poly.count
@@ -65,10 +67,12 @@ def parseGeo(geometry):
     elif geoType == "point":
         geo["type"]="Point"
         geo["coordinates"]=[geometry.firstPoint.X,geometry.firstPoint.Y]
+        return geo
     elif geoType == "multipoint":
         if geometry.pointCount == 1:
             geo["type"]="Point"
             geo["coordinates"]=[geometry.firstPoint.X,geometry.firstPoint.Y]
+            return geo
         else:
             geo["type"]="MultiPoint"
             points=[]
@@ -79,19 +83,49 @@ def parseGeo(geometry):
                 points.append([point.X,point.Y])
                 i+=1
             geo["coordinates"]=points
+            return geo
     elif geoType == "polyline":
         if geometry.partCount==1:
-            geo["type"]="LineString"
-            geo["coordinates"]=parseLine(geometry.getPart(0))
+            outLine=parseLine(geometry.getPart(0))
+            geo["type"]=outLine[0]
+            geo["coordinates"]=outLine[1]
+            return geo
         else:
             geo["type"]="MultiLineString"
+            points=[]
             lines=[]
             lineCount=geometry.partCount
             i=0
             while i<lineCount:
-                lines.append(parseLine(geometry.getPart(i)))
+                outLine = parseLine(geometry.getPart(i))
+                if outLine[0]=="LineString":
+                    lines.append(outLine[1])
+                elif outLine[1]=="Point":
+                    points.append(outLine[1])
                 i+=1
-            geo["coordinates"]=lines
+            if lines:
+                if len(lines)==1:
+                    geo["type"]="LineString"
+                    geo["coordinates"]=lines[0]
+                else:
+                    geo["coordinates"]=lines
+            if points:
+                pointGeo={}
+                pointGeo["coordinates"]=points
+                if len(pointGeo["coordinates"])==1:
+                    pointGeo["coordinates"]=pointGeo["coordinates"][0]
+                    pointGeo["type"]="Point"
+                else:
+                    pointGeo["type"]="MultiPoint"
+            if lines and not points:
+                return geo
+            elif points and not lines:
+                return pointGeo
+            elif points and lines:
+                out = {}
+                out["type"]="GeometryCollection"
+                outGeo = [points,lines]
+            return outGeo
     elif geoType == "polygon":
         if geometry.partCount==1:
             outPoly = parsePoly(geometry.getPart(0))
@@ -154,8 +188,7 @@ def parseGeo(geometry):
                         outGeo.append(type)
                 out["geometries"]=outGeo
                 return out
-            else:
-                return None
+    return {}
 def toGeoJSON(featureClass, outJSON,includeGeometry="true"):
     includeGeometry = (includeGeometry=="true")
     if outJSON[-8:].lower()==".geojson":
