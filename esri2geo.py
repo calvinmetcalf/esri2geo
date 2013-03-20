@@ -39,6 +39,8 @@ def parseLine(line):
         pt=line[i]
         out.append([pt.X,pt.Y])
         i+=1
+    if len(out)==2 and out[0]==out[1]:
+        return ["Point",out[0]]
     return ["LineString",out]
 def parsePoly(poly):
     out=[]
