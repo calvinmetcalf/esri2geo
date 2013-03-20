@@ -52,7 +52,9 @@ def parsePoly(poly):
             out=[]
         i+=1
     polys.append(out)
-    if len(polys[0])<4:
+    if len(polys[0])==3:
+        return ["LineString", polys[0][:2]]
+    if len(polys[0])<3:
         return ["Point",polys[0][0]]
     return ["Polygon",polys]
 def parseGeo(geometry):
@@ -99,6 +101,7 @@ def parseGeo(geometry):
         else:
             geo["type"]="MultiPolygon"
             polys=[]
+            lines=[]
             points=[]
             polyCount=geometry.partCount
             i=0
@@ -106,15 +109,20 @@ def parseGeo(geometry):
                 polyPart = parsePoly(geometry.getPart(i))
                 if polyPart[0]=="Polygon":
                     polys.append(polyPart[1])
-                if polyPart[0]=="Point":
+                elif polyPart[0]=="Point":
                     points.append(polyPart[1])
+                elif polyPart[0]=="LineString":
+                    lines.append(polyPart[1])
                 i+=1
+            num = 0
             if polys:
+                num+=1
                 geo["coordinates"]=polys
                 if len(geo["coordinates"])==1:
                     geo["coordinates"]=geo["coordinates"][0]
                     geo["type"]="Polygon"
             if points:
+                num+=1
                 pointGeo={}
                 pointGeo["coordinates"]=points
                 if len(pointGeo["coordinates"])==1:
@@ -122,14 +130,29 @@ def parseGeo(geometry):
                     pointGeo["type"]="Point"
                 else:
                     pointGeo["type"]="MultiPoint"
-            if polys and not points:
+            if lines:
+                num+=1
+                lineGeo={}
+                lineGeo["coordinates"]=lineGeo
+                if len(lineGeo["coordinates"])==1:
+                    lineGeo["coordinates"]=lineGeo["coordinates"][0]
+                    pointGeo["type"]="LineString"
+                else:
+                    pointGeo["type"]="MultiLineString"
+            if polys and not points and not lines:
                 return geo
-            elif points and not polys:
+            elif points and not polys and not lines:
                 return pointGeo
-            elif points and polys:
+            elif lines and not polys and not points:
+                return lineGeo
+            elif num>1:
                 out = {}
                 out["type"]="GeometryCollection"
-                out["geometries"]=[geo,pointGeo]
+                outGeo = []
+                for type in [polys,points,lines]:
+                    if type:
+                        outGeo.append(type)
+                out["geometries"]=outGeo
                 return out
             else:
                 return None
