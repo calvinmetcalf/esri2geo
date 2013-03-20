@@ -42,17 +42,19 @@ def parsePoly(poly):
     out=[]
     polyCount=poly.count
     i=0
-    donut=[]
+    polys=[]
     while i<polyCount:
         pt=poly[i]
         if pt:
             out.append([pt.X,pt.Y])
         else:
-            donut.append(out) if len(out)>3 else True
+            polys.append(out)
             out=[]
         i+=1
-    donut.append(out) if len(out)>3 else True
-    return donut
+    polys.append(out)
+    if len(polys[0])<4:
+        return ["Point",polys[0][0]]
+    return ["Polygon",polys]
 def parseGeo(geometry):
     geo=dict()
     geoType=geometry.type
@@ -90,27 +92,57 @@ def parseGeo(geometry):
             geo["coordinates"]=lines
     elif geoType == "polygon":
         if geometry.partCount==1:
-            geo["type"]="Polygon"
-            geo["coordinates"]=parsePoly(geometry.getPart(0))
+            outPoly = parsePoly(geometry.getPart(0))
+            geo["type"]=outPoly[0]
+            geo["coordinates"]=outPoly[1]
+            return geo
         else:
             geo["type"]="MultiPolygon"
             polys=[]
+            points=[]
             polyCount=geometry.partCount
             i=0
             while i<polyCount:
                 polyPart = parsePoly(geometry.getPart(i))
-                if polyPart:
-                    polys.append(polyPart)
+                if polyPart[0]=="Polygon":
+                    polys.append(polyPart[1])
+                if polyPart[0]=="Point":
+                    points.append(polyPart[1])
                 i+=1
-            geo["coordinates"]=polys
-            if len(geo["coordinates"])==1:
-                geo["coordinates"]=geo["coordinates"][0]
-                geo["type"]="Polygon"
-    return geo
-def toGeoJSON(featureClass, outJSON, fileType="GeoJSON"):
-    fileType = fileType.lower()
+            if polys:
+                geo["coordinates"]=polys
+                if len(geo["coordinates"])==1:
+                    geo["coordinates"]=geo["coordinates"][0]
+                    geo["type"]="Polygon"
+            if points:
+                pointGeo={}
+                pointGeo["coordinates"]=points
+                if len(pointGeo["coordinates"])==1:
+                    pointGeo["coordinates"]=pointGeo["coordinates"][0]
+                    pointGeo["type"]="Point"
+                else:
+                    pointGeo["type"]="MultiPoint"
+            if polys and not points:
+                return geo
+            elif points and not polys:
+                return pointGeo
+            elif points and polys:
+                out = {}
+                out["type"]="GeometryCollection"
+                out["geometries"]=[geo,pointGeo]
+                return out
+            else:
+                return None
+def toGeoJSON(featureClass, outJSON,includeGeometry="true"):
+    includeGeometry = (includeGeometry=="true")
+    if outJSON[-8:].lower()==".geojson":
+        fileType = "geojson"
+    elif outJSON[-5:].lower()==".json":
+        fileType = "json"
+    elif outJSON[-4:].lower()==".csv":
+        fileType = "csv"
     featureCount = int(arcpy.GetCount_management(featureClass).getOutput(0))
-    #arcpy.gMessage("parsing "+str(featureCount)+"features")
+    arcpy.AddMessage("Found "+str(featureCount)+" features")
     if outJSON[-len(fileType)-1:]!="."+fileType:
         outJSON = outJSON+"."+fileType
     out=open(outJSON,"wb")
@@ -118,13 +150,16 @@ def toGeoJSON(featureClass, outJSON, fileType="GeoJSON"):
     shp=getShp(featureClass)
     oid=getOID(fields)
     if fileType=="geojson":
-        out.write("""{"type":"FeatureCollection",features:[""")
+        out.write("""{"type":"FeatureCollection","features":[""")
+        if not includeGeometry:
+            arcpy.AddMessage("it's geojson, we have to include the geometry")
     elif fileType=="csv":
         fieldNames = []
         for field in fields:
             if (fields[field] != u'OID') and field.lower() not in ('shape_length','shape_area',shp.lower()):
                 fieldNames.append(field)
-        fieldNames.append("geometry")
+        if includeGeometry:
+            fieldNames.append("geometry")
         outCSV=csv.DictWriter(out,fieldNames,extrasaction='ignore')
         fieldObject = {}
         for fieldName in fieldNames:
@@ -137,12 +172,15 @@ def toGeoJSON(featureClass, outJSON, fileType="GeoJSON"):
     rows=arcpy.SearchCursor(featureClass,"",sr)
     del fields[shp]
     first = True
+    i=0
     try:
         for row in rows:
+            i+=1
+            arcpy.AddMessage("on "+str(i)+" of " + str(featureCount))
             fc={"type": "Feature"}
             fc["geometry"]=parseGeo(row.getValue(shp))
             fc["id"]=row.getValue(oid)
-            if len(fc["geometry"]["coordinates"])==0:
+            if fc["geometry"] is None:
                 continue
             fc["properties"]=parseProp(row,fields)
             if fileType=="geojson":
@@ -153,10 +191,12 @@ def toGeoJSON(featureClass, outJSON, fileType="GeoJSON"):
                     out.write(",")
                     json.dump(fc,out)
             elif fileType=="csv":
-                fc["properties"]["geometry"]=str(fc["geometry"])
+                if includeGeometry:
+                    fc["properties"]["geometry"]=str(fc["geometry"])
                 outCSV.writerow(fc["properties"])
             elif fileType=="json":
-                fc["properties"]["geometry"]=str(fc["geometry"])
+                if includeGeometry:
+                    fc["properties"]["geometry"]=str(fc["geometry"])
                 if first:
                     first=False
                     json.dump(fc["properties"],out)
