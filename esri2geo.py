@@ -151,7 +151,7 @@ def toGeoJSON(featureClass, outJSON, fileType="GeoJSON"):
     shp=getShp(featureClass)
     oid=getOID(fields)
     if fileType=="geojson":
-        out.write("""{"type":"FeatureCollection",features:[""")
+        out.write("""{"type":"FeatureCollection","features":[""")
     elif fileType=="csv":
         fieldNames = []
         for field in fields:
