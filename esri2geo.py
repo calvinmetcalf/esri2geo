@@ -42,17 +42,23 @@ def parsePoly(poly):
     out=[]
     polyCount=poly.count
     i=0
-    polys=[[],[]]
+    polys=[]
     while i<polyCount:
         pt=poly[i]
         if pt:
             out.append([pt.X,pt.Y])
         else:
-            polys[0].append(out) if len(out)>3 else polys[1].append(out[0])
+            if len(out)>3:
+                polys.append(out)
+            elif i==0:
+                return ["point",out[0]]
             out=[]
         i+=1
-    polys[0].append(out) if len(out)>3 else polys[1].append(out[0])
-    return polys
+    if len(out)>3:
+        polys.append(out)
+    elif i==0:
+        return ["point",out[0]]
+    return ["poly",polys]
 def parseGeo(geometry):
     geo=dict()
     geoType=geometry.type
@@ -90,8 +96,13 @@ def parseGeo(geometry):
             geo["coordinates"]=lines
     elif geoType == "polygon":
         if geometry.partCount==1:
-            geo["type"]="Polygon"
-            geo["coordinates"]=parsePoly(geometry.getPart(0))
+            outPoly = parsePoly(geometry.getPart(0))
+            if outPoly[0]=="poly":
+                geo["type"]="Polygon"
+                geo["coordinates"]=outPoly[1]
+            elif outPoly[1]=="point":
+                geo["type"]="Point"
+                geo["coordinates"]=outPoly[1]
         else:
             geo["type"]="MultiPolygon"
             polys=[]
@@ -100,9 +111,9 @@ def parseGeo(geometry):
             i=0
             while i<polyCount:
                 polyPart = parsePoly(geometry.getPart(i))
-                if polyPart[0]:
-                    polys.append(polyPart[0])
-                if polyPart[1]:
+                if polyPart[0]=="poly":
+                    polys.append(polyPart[1])
+                if polyPart[0]=="point":
                     points.append(polyPart[1])
                 i+=1
             if polys:
