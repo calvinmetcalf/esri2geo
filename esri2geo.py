@@ -16,10 +16,10 @@ def getOID(fields):
     for key, value in fields.items():
         if value== u'OID':
             return key
-def parseProp(row,fields):
+def parseProp(row,fields, shp):
     out=dict()
     for field in fields:
-        if (fields[field] != u'OID') and field.lower() not in ('shape_length','shape_area','shape') and row.getValue(field) is not None:
+        if (fields[field] != u'OID') and field.lower() not in ('shape_length','shape_area','shape.len','shape.area',shp.lower()) and row.getValue(field) is not None:
             if fields[field] == "Date":
                 value = str(row.getValue(field).date())
             elif fields[field] == "String":
@@ -262,7 +262,7 @@ def toGeoJSON(featureClass, outJSON,includeGeometry="true"):
             fc["id"]=row.getValue(oid)
             if fc["geometry"] is None:
                 continue
-            fc["properties"]=parseProp(row,fields)
+            fc["properties"]=parseProp(row,fields, shp)
             if fileType=="geojson":
                 if first:
                     first=False
