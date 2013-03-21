@@ -16,4 +16,6 @@ outFolder = GetParameterAsText(1)
 outType = GetParameterAsText(2)
 includeGeometries = GetParameterAsText(3)
 for feature in features:
+    if feature[0] in ("'",'"'):
+        feature = feature[1:-1]
     toGeoJSON(feature,outFolder+"//"+getName(feature)+"."+outType,includeGeometries)
