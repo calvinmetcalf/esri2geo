@@ -291,4 +291,3 @@ def toGeoJSON(featureClass, outJSON,includeGeometry="true"):
         if fileType=="geojson" or fileType=="json":
             out.write("""]}""")
         out.close()
-toGeoJSON(arcpy.GetParameterAsText(0),arcpy.GetParameterAsText(1),arcpy.GetParameterAsText(2))
