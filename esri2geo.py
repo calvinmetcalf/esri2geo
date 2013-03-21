@@ -1,4 +1,4 @@
-import arcpy#,datetime
+import arcpy
 from csv import DictWriter
 from json import dump
 #uncomment the following line and comment the final line to use in the console

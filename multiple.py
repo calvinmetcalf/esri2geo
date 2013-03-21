@@ -19,6 +19,9 @@ for feature in features:
     if feature[0] in ("'",'"'):
         feature = feature[1:-1]
     outName = getName(feature)
-    AddMessage("starting {0}".format(outName))
     outPath = "{0}{1}{2}.{3}".format(outFolder,sep,outName,outType)
+    if path.exists(outPath):
+        AddMessage("{0} exists, skipping".format(outName))
+        continue
+    AddMessage("starting {0}".format(outName))
     toGeoJSON(feature,outPath,includeGeometries)
