@@ -1,4 +1,4 @@
-import arcpy
+from arcpy import ListFields,Describe, SetProgressorLabel,SetProgressorPosition,GetCount_management,SetProgressor,AddMessage,SpatialReference,SearchCursor
 from csv import DictWriter
 from json import dump
 #uncomment the following line and comment the final line to use in the console
@@ -6,13 +6,13 @@ from json import dump
 wgs84="GEOGCS['GCS_WGS_1984',DATUM['D_WGS_1984',SPHEROID['WGS_1984',6378137.0,298.257223563]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]];-400 -400 1000000000;-100000 10000;-100000 10000;8.98315284119522E-09;0.001;0.001;IsHighPrecision"
 
 def listFields(featureClass):
-    fields=arcpy.ListFields(featureClass)
+    fields=ListFields(featureClass)
     out=dict()
     for fld in fields:
         out[fld.name]=fld.type
     return out
 def getShp(shp):
-    desc = arcpy.Describe(shp)
+    desc = Describe(shp)
     return desc.ShapeFieldName
 def getOID(fields):
     for key, value in fields.items():
@@ -23,8 +23,8 @@ def statusMessage(total,current,last):
     if newPercent == last:
         return last
     else:
-        arcpy.SetProgressorLabel("{0}% done".format(str(newPercent)))
-        arcpy.SetProgressorPosition(newPercent)
+        SetProgressorLabel("{0}% done".format(str(newPercent)))
+        SetProgressorPosition(newPercent)
         return newPercent
 def parseProp(row,fields, shp):
     out=dict()
@@ -231,9 +231,9 @@ def toGeoJSON(featureClass, outJSON,includeGeometry="true"):
         fileType = "json"
     elif outJSON[-4:].lower()==".csv":
         fileType = "csv"
-    featureCount = int(arcpy.GetCount_management(featureClass).getOutput(0))
-    arcpy.SetProgressor("step", "Found {0} features".format(str(featureCount)), 0, 100,1)
-    arcpy.AddMessage("Found "+str(featureCount)+" features")
+    featureCount = int(GetCount_management(featureClass).getOutput(0))
+    SetProgressor("step", "Found {0} features".format(str(featureCount)), 0, 100,1)
+    AddMessage("Found "+str(featureCount)+" features")
     if outJSON[-len(fileType)-1:]!="."+fileType:
         outJSON = outJSON+"."+fileType
     out=open(outJSON,"wb")
@@ -243,11 +243,11 @@ def toGeoJSON(featureClass, outJSON,includeGeometry="true"):
     if fileType=="geojson":
         out.write("""{"type":"FeatureCollection","features":[""")
         if not includeGeometry:
-            arcpy.AddMessage("it's geojson, we have to include the geometry")
+            AddMessage("it's geojson, we have to include the geometry")
     elif fileType=="csv":
         fieldNames = []
         for field in fields:
-            if (fields[field] != u'OID') and field.lower() not in ('shape_length','shape_area',shp.lower()):
+            if (fields[field] != u'OID') and field.lower() not in ('shape_length','shape_area','shape.len','shape.length','shape_len','shape.area',shp.lower()):
                 fieldNames.append(field)
         if includeGeometry:
             fieldNames.append("geometry")
@@ -258,9 +258,9 @@ def toGeoJSON(featureClass, outJSON,includeGeometry="true"):
         outCSV.writerow(fieldObject)
     elif fileType=="json":
         out.write("""{"rows":[""")
-    sr=arcpy.SpatialReference()
+    sr=SpatialReference()
     sr.loadFromString(wgs84)
-    rows=arcpy.SearchCursor(featureClass,"",sr)
+    rows=SearchCursor(featureClass,"",sr)
     del fields[shp]
     first = True
     i=0
