@@ -1,4 +1,6 @@
-import arcpy,json,os,csv,datetime
+import arcpy#,datetime
+from csv import DictWriter
+from json import dump
 #uncomment the following line and comment the final line to use in the console
 #arcpy.env.workspace = os.getcwd()
 wgs84="GEOGCS['GCS_WGS_1984',DATUM['D_WGS_1984',SPHEROID['WGS_1984',6378137.0,298.257223563]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]];-400 -400 1000000000;-100000 10000;-100000 10000;8.98315284119522E-09;0.001;0.001;IsHighPrecision"
@@ -16,10 +18,18 @@ def getOID(fields):
     for key, value in fields.items():
         if value== u'OID':
             return key
+def statusMessage(total,current,last):
+    newPercent = int((current*100)/total)
+    if newPercent == last:
+        return last
+    else:
+        arcpy.SetProgressorLabel("{0}% done".format(str(newPercent)))
+        arcpy.SetProgressorPosition(newPercent)
+        return newPercent
 def parseProp(row,fields, shp):
     out=dict()
     for field in fields:
-        if (fields[field] != u'OID') and field.lower() not in ('shape_length','shape_area','shape.len','shape.area',shp.lower()) and row.getValue(field) is not None:
+        if (fields[field] != u'OID') and field.lower() not in ('shape_length','shape_area','shape.len','shape.length','shape_len','shape.area',shp.lower()) and row.getValue(field) is not None:
             if fields[field] == "Date":
                 value = str(row.getValue(field).date())
             elif fields[field] == "String":
@@ -222,6 +232,7 @@ def toGeoJSON(featureClass, outJSON,includeGeometry="true"):
     elif outJSON[-4:].lower()==".csv":
         fileType = "csv"
     featureCount = int(arcpy.GetCount_management(featureClass).getOutput(0))
+    arcpy.SetProgressor("step", "Found {0} features".format(str(featureCount)), 0, 100,1)
     arcpy.AddMessage("Found "+str(featureCount)+" features")
     if outJSON[-len(fileType)-1:]!="."+fileType:
         outJSON = outJSON+"."+fileType
@@ -240,7 +251,7 @@ def toGeoJSON(featureClass, outJSON,includeGeometry="true"):
                 fieldNames.append(field)
         if includeGeometry:
             fieldNames.append("geometry")
-        outCSV=csv.DictWriter(out,fieldNames,extrasaction='ignore')
+        outCSV=DictWriter(out,fieldNames,extrasaction='ignore')
         fieldObject = {}
         for fieldName in fieldNames:
             fieldObject[fieldName]=fieldName
@@ -253,23 +264,24 @@ def toGeoJSON(featureClass, outJSON,includeGeometry="true"):
     del fields[shp]
     first = True
     i=0
+    iPercent=0
     try:
         for row in rows:
             i+=1
-            arcpy.AddMessage("on "+str(i)+" of " + str(featureCount))
+            iPercent=statusMessage(featureCount,i,iPercent)
             fc={"type": "Feature"}
             fc["geometry"]=parseGeo(row.getValue(shp))
             fc["id"]=row.getValue(oid)
-            if fc["geometry"] is None:
-                continue
             fc["properties"]=parseProp(row,fields, shp)
             if fileType=="geojson":
+                if fc["geometry"]=={}:
+                    continue
                 if first:
                     first=False
-                    json.dump(fc,out)
+                    dump(fc,out)
                 else:
                     out.write(",")
-                    json.dump(fc,out)
+                    dump(fc,out)
             elif fileType=="csv":
                 if includeGeometry:
                     fc["properties"]["geometry"]=str(fc["geometry"])
@@ -279,10 +291,10 @@ def toGeoJSON(featureClass, outJSON,includeGeometry="true"):
                     fc["properties"]["geometry"]=str(fc["geometry"])
                 if first:
                     first=False
-                    json.dump(fc["properties"],out)
+                    dump(fc["properties"],out)
                 else:
                     out.write(",")
-                    json.dump(fc["properties"],out)
+                    dump(fc["properties"],out)
     except Exception as e:
         print("OH SNAP! " + str(e))
     finally:

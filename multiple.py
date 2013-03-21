@@ -1,6 +1,6 @@
-from arcpy import GetParameterAsText
+from arcpy import GetParameterAsText,AddMessage
 from esri2geo import toGeoJSON
-from os import path
+from os import path,sep
 def getName(feature):
     name = path.splitext(path.split(feature)[1])
     if name[1]:
@@ -18,4 +18,7 @@ includeGeometries = GetParameterAsText(3)
 for feature in features:
     if feature[0] in ("'",'"'):
         feature = feature[1:-1]
-    toGeoJSON(feature,outFolder+"//"+getName(feature)+"."+outType,includeGeometries)
+    outName = getName(feature)
+    AddMessage("starting {0}".format(outName))
+    outPath = "{0}{1}{2}.{3}".format(outFolder,sep,outName,outType)
+    toGeoJSON(feature,outPath,includeGeometries)
