@@ -13,7 +13,7 @@ def listFields(featureClass):
     return out
 def getShp(shp):
     desc = Describe(shp)
-    return desc.ShapeFieldName
+    return [desc.ShapeFieldName,desc.shapeType.lower()]
 def getOID(fields):
     for key, value in fields.items():
         if value== u'OID':
@@ -211,18 +211,8 @@ def parseMultiPolygon(geometry):
             return out
         else:
             return {}
-def parseGeo(geometry):
-    geoType=geometry.type
-    if geoType in ("multipatch", "dimension", "annotation"):
-        return {}
-    elif geoType == "point":
-       return parsePoint(geometry)
-    elif geoType == "multipoint":
-        return parseMultiPoint(geometry)
-    elif geoType == "polyline":
-        return parseMultiLineString(geometry)
-    elif geoType == "polygon":
-        return parseMultiPolygon(geometry)
+def parseMultiPatch():
+    return {}
 def toGeoJSON(featureClass, outJSON,includeGeometry="true"):
     includeGeometry = (includeGeometry=="true")
     if outJSON[-8:].lower()==".geojson":
@@ -241,7 +231,7 @@ def toGeoJSON(featureClass, outJSON,includeGeometry="true"):
         outJSON = outJSON+"."+fileType
     out=open(outJSON,"wb")
     fields=listFields(featureClass)
-    shp=getShp(featureClass)
+    [shp,shpType]=getShp(featureClass)
     oid=getOID(fields)
     if fileType=="geojson":
         out.write("""{"type":"FeatureCollection","features":[""")
@@ -268,6 +258,17 @@ def toGeoJSON(featureClass, outJSON,includeGeometry="true"):
     first = True
     i=0
     iPercent=0
+    if fileType=="geojson" or includeGeometry:
+        if shpType == "point":
+            parseGeo = parsePoint
+        elif shpType == "multipoint":
+            parseGeo = parseMultiPoint
+        elif shpType == "polyline":
+            parseGeo = parseMultiLineString
+        elif shpType == "polygon":
+            parseGeo = parseMultiPolygon
+        else:
+            parseGeo = parseMultiPatch
     try:
         for row in rows:
             i+=1
