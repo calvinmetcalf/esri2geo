@@ -273,7 +273,8 @@ def toGeoJSON(featureClass, outJSON,includeGeometry="true"):
             i+=1
             iPercent=statusMessage(featureCount,i,iPercent)
             fc={"type": "Feature"}
-            fc["geometry"]=parseGeo(row.getValue(shp))
+            if fileType=="geojson" or includeGeometry:
+                fc["geometry"]=parseGeo(row.getValue(shp))
             fc["id"]=row.getValue(oid)
             fc["properties"]=parseProp(row,fields, shp)
             if fileType=="geojson":
