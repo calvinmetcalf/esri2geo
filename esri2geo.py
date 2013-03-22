@@ -232,6 +232,9 @@ def toGeoJSON(featureClass, outJSON,includeGeometry="true"):
     elif outJSON[-4:].lower()==".csv":
         fileType = "csv"
     featureCount = int(GetCount_management(featureClass).getOutput(0))
+    if featureCount == 0:
+        AddMessage("No features found, skipping")
+        return
     SetProgressor("step", "Found {0} features".format(str(featureCount)), 0, 100,1)
     AddMessage("Found "+str(featureCount)+" features")
     if outJSON[-len(fileType)-1:]!="."+fileType:
