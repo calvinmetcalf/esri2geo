@@ -306,7 +306,7 @@ def writeFile(featureClass,outFile,includeGeometry,fileType):
     finally:
         del row
         del rows
-def toGeoJSON(featureClass, outJSON,includeGeometry="true"):
+def toOpen(featureClass, outJSON,includeGeometry="true"):
     includeGeometry = (includeGeometry=="true")
     if outJSON[-8:].lower()==".geojson":
         fileType = "geojson"
