@@ -245,7 +245,7 @@ def closeUp(out,fileType):
     if fileType=="geojson" or fileType=="json":
             out.write("""]}""")
     out.close()
-def writeFile(featureClass,outFile,includeGeometry,fileType):
+def writeFile(outFile,featureClass,fileType,includeGeometry):
     [shp,shpType]=getShp(featureClass)
     fields=listFields(featureClass)
     oid=getOID(fields)
@@ -321,5 +321,5 @@ def toOpen(featureClass, outJSON,includeGeometry="true"):
         outJSON = outJSON+"."+fileType
     out=open(outJSON,"wb")
     outFile=prepareFile(out,featureClass,fileType,includeGeometry)
-    writeFile(featureClass,outFile,includeGeometry,fileType)
+    writeFile(outFile,featureClass,fileType,includeGeometry)
     closeUp(out,fileType)
