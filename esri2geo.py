@@ -306,7 +306,11 @@ def writeFile(outFile,featureClass,fileType,includeGeometry):
     finally:
         del row
         del rows
+        return True
 def toOpen(featureClass, outJSON,includeGeometry="true"):
+    if not int(GetCount_management(featureClass).getOutput(0)):
+        AddMessage("No features found, skipping")
+        return
     includeGeometry = (includeGeometry=="true")
     if outJSON[-8:].lower()==".geojson":
         fileType = "geojson"
@@ -314,9 +318,6 @@ def toOpen(featureClass, outJSON,includeGeometry="true"):
         fileType = "json"
     elif outJSON[-4:].lower()==".csv":
         fileType = "csv"
-    if not int(GetCount_management(featureClass).getOutput(0)):
-        AddMessage("No features found, skipping")
-        return
     if outJSON[-len(fileType)-1:]!="."+fileType:
         outJSON = outJSON+"."+fileType
     out=open(outJSON,"wb")
