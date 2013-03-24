@@ -213,44 +213,42 @@ def parseMultiPolygon(geometry):
             return {}
 def parseMultiPatch():
     return {}
-def toGeoJSON(featureClass, outJSON,includeGeometry="true"):
-    includeGeometry = (includeGeometry=="true")
-    if outJSON[-8:].lower()==".geojson":
-        fileType = "geojson"
-    elif outJSON[-5:].lower()==".json":
-        fileType = "json"
-    elif outJSON[-4:].lower()==".csv":
-        fileType = "csv"
-    featureCount = int(GetCount_management(featureClass).getOutput(0))
-    if featureCount == 0:
-        AddMessage("No features found, skipping")
-        return
-    SetProgressor("step", "Found {0} features".format(str(featureCount)), 0, 100,1)
-    AddMessage("Found "+str(featureCount)+" features")
-    if outJSON[-len(fileType)-1:]!="."+fileType:
-        outJSON = outJSON+"."+fileType
-    out=open(outJSON,"wb")
+def prepareGeoJson(out):
+    out.write("""{"type":"FeatureCollection","features":[""")
+    return out
+def prepareJson(out):
+    out.write("""{"rows":[""")
+    return out
+def prepareCsv(out,featureClass,fileType,includeGeometry):
+    shp=getShp(featureClass)[0]
     fields=listFields(featureClass)
-    [shp,shpType]=getShp(featureClass)
-    oid=getOID(fields)
+    fieldNames = []
+    for field in fields:
+        if (fields[field] != u'OID') and field.lower() not in ('shape_length','shape_area','shape.len','shape.length','shape_len','shape.area',shp.lower()):
+            fieldNames.append(field)
+    if includeGeometry:
+        fieldNames.append("geometry")
+    outCSV=DictWriter(out,fieldNames,extrasaction='ignore')
+    fieldObject = {}
+    for fieldName in fieldNames:
+        fieldObject[fieldName]=fieldName
+    outCSV.writerow(fieldObject)
+    return outCSV
+def prepareFile(out,featureClass,fileType,includeGeometry):
     if fileType=="geojson":
-        out.write("""{"type":"FeatureCollection","features":[""")
-        if not includeGeometry:
-            AddMessage("it's geojson, we have to include the geometry")
+        return prepareGeoJson(out)
     elif fileType=="csv":
-        fieldNames = []
-        for field in fields:
-            if (fields[field] != u'OID') and field.lower() not in ('shape_length','shape_area','shape.len','shape.length','shape_len','shape.area',shp.lower()):
-                fieldNames.append(field)
-        if includeGeometry:
-            fieldNames.append("geometry")
-        outCSV=DictWriter(out,fieldNames,extrasaction='ignore')
-        fieldObject = {}
-        for fieldName in fieldNames:
-            fieldObject[fieldName]=fieldName
-        outCSV.writerow(fieldObject)
+        return prepareCsv(out,featureClass,fileType,includeGeometry)
     elif fileType=="json":
-        out.write("""{"rows":[""")
+        return prepareJson(out)
+def closeUp(out,fileType):
+    if fileType=="geojson" or fileType=="json":
+            out.write("""]}""")
+    out.close()
+def writeFile(featureClass,outFile,includeGeometry,fileType):
+    [shp,shpType]=getShp(featureClass)
+    fields=listFields(featureClass)
+    oid=getOID(fields)
     sr=SpatialReference()
     sr.loadFromString(wgs84)
     rows=SearchCursor(featureClass,"",sr)
@@ -258,6 +256,9 @@ def toGeoJSON(featureClass, outJSON,includeGeometry="true"):
     first = True
     i=0
     iPercent=0
+    featureCount = int(GetCount_management(featureClass).getOutput(0))
+    SetProgressor("step", "Found {0} features".format(str(featureCount)), 0, 100,1)
+    AddMessage("Found "+str(featureCount)+" features")
     if fileType=="geojson" or includeGeometry:
         if shpType == "point":
             parseGeo = parsePoint
@@ -283,28 +284,42 @@ def toGeoJSON(featureClass, outJSON,includeGeometry="true"):
                     continue
                 if first:
                     first=False
-                    dump(fc,out)
+                    dump(fc,outFile)
                 else:
-                    out.write(",")
-                    dump(fc,out)
+                    outFile.write(",")
+                    dump(fc,outFile)
             elif fileType=="csv":
                 if includeGeometry:
                     fc["properties"]["geometry"]=str(fc["geometry"])
-                outCSV.writerow(fc["properties"])
+                outFile.writerow(fc["properties"])
             elif fileType=="json":
                 if includeGeometry:
                     fc["properties"]["geometry"]=str(fc["geometry"])
                 if first:
                     first=False
-                    dump(fc["properties"],out)
+                    dump(fc["properties"],outFile)
                 else:
-                    out.write(",")
-                    dump(fc["properties"],out)
+                    outFile.write(",")
+                    dump(fc["properties"],outFile)
     except Exception as e:
         print("OH SNAP! " + str(e))
     finally:
         del row
         del rows
-        if fileType=="geojson" or fileType=="json":
-            out.write("""]}""")
-        out.close()
+def toGeoJSON(featureClass, outJSON,includeGeometry="true"):
+    includeGeometry = (includeGeometry=="true")
+    if outJSON[-8:].lower()==".geojson":
+        fileType = "geojson"
+    elif outJSON[-5:].lower()==".json":
+        fileType = "json"
+    elif outJSON[-4:].lower()==".csv":
+        fileType = "csv"
+    if not int(GetCount_management(featureClass).getOutput(0)):
+        AddMessage("No features found, skipping")
+        return
+    if outJSON[-len(fileType)-1:]!="."+fileType:
+        outJSON = outJSON+"."+fileType
+    out=open(outJSON,"wb")
+    outFile=prepareFile(out,featureClass,fileType,includeGeometry)
+    writeFile(featureClass,outFile,includeGeometry,fileType)
+    closeUp(out,fileType)
