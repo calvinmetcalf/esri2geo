@@ -245,7 +245,7 @@ def closeUp(out,fileType):
     if fileType=="geojson" or fileType=="json":
             out.write("""]}""")
     out.close()
-def writeFile(outFile,featureClass,fileType,includeGeometry):
+def writeFile(outFile,featureClass,fileType,includeGeometry, first=True):
     [shp,shpType]=getShp(featureClass)
     fields=listFields(featureClass)
     oid=getOID(fields)
@@ -253,7 +253,6 @@ def writeFile(outFile,featureClass,fileType,includeGeometry):
     sr.loadFromString(wgs84)
     rows=SearchCursor(featureClass,"",sr)
     del fields[shp]
-    first = True
     i=0
     iPercent=0
     featureCount = int(GetCount_management(featureClass).getOutput(0))
@@ -307,7 +306,7 @@ def writeFile(outFile,featureClass,fileType,includeGeometry):
         del row
         del rows
         return True
-def toOpen(featureClass, outJSON,includeGeometry="true"):
+def toOpen(featureClass, outJSON, includeGeometry="true"):
     if not int(GetCount_management(featureClass).getOutput(0)):
         AddMessage("No features found, skipping")
         return
