@@ -1,5 +1,5 @@
 from arcpy import GetParameterAsText,AddMessage
-from esri2geo import toGeoJSON
+from esri2geo import toOpen
 from os import path,sep
 def getName(feature):
     name = path.splitext(path.split(feature)[1])
@@ -24,4 +24,4 @@ for feature in features:
         AddMessage("{0} exists, skipping".format(outName))
         continue
     AddMessage("starting {0}".format(outName))
-    toGeoJSON(feature,outPath,includeGeometries)
+    toOpen(feature,outPath,includeGeometries)
