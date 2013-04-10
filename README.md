@@ -1,7 +1,10 @@
 esri2geo
 ========
 
+
 Looking for the esri toolbox? It's over at [it's own repo](https://github.com/calvinmetcalf/esri2open) to hopefully merge with [@feomike's version](https://github.com/feomike/esri2open)
+Here have a tool to turn esri json to geojson should work in the browser, in a worker, and in node.
+
 
 ```javascript
 var geoJSON = toGeoJSON(esriJSON);
