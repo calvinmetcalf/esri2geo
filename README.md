@@ -1,10 +1,7 @@
 esri2geo
 ========
 
-Converts ESRI to geojson and other open formats, two seperate tools:
-
-* A toolbox you can use from inside arcpay to allow export as geojson, regular json (just an array of the properties objects optionally with geometery as a property) or csv (same as json but as csv). 
-* We also have a tool to turn esri json to geojson should work in the browser, in a worker, and in node.
+Looking for the esri toolbox? It's over at [it's own repo](https://github.com/calvinmetcalf/esri2open) to hopefully merge with [@feomike's version](https://github.com/feomike/esri2open)
 
 ```javascript
 var geoJSON = toGeoJSON(esriJSON);
