@@ -84,7 +84,7 @@ function toGeoJSON(data,cb){
 		}else{
 			type="MultiPolygon";
 		}
-		return {"type":type,"coordinates":coords};
+		return {"type":type,"coordinates":(coords.length===1)?coords[0]:coords};
 	}
 	/*determine if polygon ring coordinates are clockwise. clockwise signifies outer ring, counter-clockwise an inner ring
 	or hole. this logic was found at http://stackoverflow.com/questions/1165647/how-to-determine-if-a-list-of-polygon-
