@@ -27,7 +27,7 @@ function handleGeoJSON(err, data) {
   
   // data => GeoJSON
   // do something with it..
-};
+}
 
 toGeoJSON(esriJSON, handleGeoJSON);
 // or
