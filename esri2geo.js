@@ -1,10 +1,10 @@
-function toGeoJSON(data,cb){
+function toGeoJSON(data, cb){
 	if(typeof data === 'string'){
 		if(cb){
-			ajax(data,function(err, d){toGeoJSON(d,cb)});
+			ajax(data, function(err, d){toGeoJSON(d,cb)});
 			return;
 		}else{
-			return toGeoJSON(ajax(data));
+			throw new TypeError('callback needed for url');
 		}
 	}
 	var outPut = { "type": "FeatureCollection","features": []};
@@ -33,7 +33,9 @@ function toGeoJSON(data,cb){
 		outPut.features.push(outFT);
 		i++;
 	}
-	function point(geometry){
+	cb(null, outPut);
+}
+function point(geometry){
 		//this one is easy
 		return {"type": "Point","coordinates": [geometry.x,geometry.y]};	
 	}
@@ -113,68 +115,27 @@ function toGeoJSON(data,cb){
 		}
 		return p;
 	}
-	if(cb){
-		cb(null,outPut);
-	}else{
-		return outPut;	
-	}
+	
 
 	function ajax(url, cb){
-		var request;
 		if(typeof module !== "undefined"){
-			if(cb){
-				request = require("request");
+				var request = require("request");
 				request(url,{json:true},function(e,r,b){
 					cb(e,b);
 				});
 				return;
-			}else{
-				return "no async sorry";
-			}
-		}
-		if (XMLHttpRequest === undefined) {
-			if(window){
-				window.XMLHttpRequest = function() {
-					try {
-						return new ActiveXObject("Microsoft.XMLHTTP.6.0");
-					}
-					catch (e1) {
-						try {
-							return new ActiveXObject("Microsoft.XMLHTTP.3.0");
-						}
-						catch (e2) {
-							throw new Error("XMLHttpRequest is not supported");
-						}
-					}
-				};
-			}
 		}
 		// the following is from JavaScript: The Definitive Guide
-		var response,async,req = new XMLHttpRequest();
+		var response;
+		var req = new XMLHttpRequest();
 		req.onreadystatechange = function() {
 			if (req.readyState === 4 && req.status === 200) {
-				if(JSON) {
-					response = JSON.parse(req.responseText);
-				} else {
-					response = eval("("+ req.responseText + ")");
-				}
-				if(cb){
-					cb(null,response);
-				}
+					cb(null, JSON.parse(req.responseText));
 			}
 		};
-		if(cb){
-			async=true;
-		}else{
-			async=false;
-		}
-		req.open("GET", url,async);
+		req.open("GET", url);
 		req.send();
-		if(!cb){
-			return response;
-		}
 	}
-}
 if (typeof module !== "undefined"){
 	module.exports = toGeoJSON;
 }
