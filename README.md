@@ -62,7 +62,7 @@ Install from npm as you would with node.
 To avoid Webpack warnings about missing node modules, add this to your webpack config:
 
 
-```json
+```javascript
 node: {
     console: true,
     fs: 'empty',
