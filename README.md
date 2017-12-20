@@ -54,7 +54,7 @@ esri2geo(esriJSON, function (err, data) {
 ```
 
 
-# Using with Webpack 2.x
+## Using with Webpack 2.x
 
 Install from npm as you would with node.
 
@@ -73,7 +73,7 @@ node: {
 },
 ```
 
-# Using as standalone browser component
+## Using as standalone browser component
 
 Download the esri2geo.js file, include on your page and reference it through the 
 esri2geo namespace:
