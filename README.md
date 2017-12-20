@@ -53,6 +53,38 @@ esri2geo(esriJSON, function (err, data) {
 });
 ```
 
+
+# Using with Webpack 2.x
+
+Install from npm as you would with node.
+
+
+To avoid Webpack warnings about missing node modules, add this to your webpack config:
+
+
+```json
+node: {
+    console: true,
+    fs: 'empty',
+    net: 'empty',
+    tls: 'empty',
+    dns: 'empty',
+    dgram: 'empty'
+},
+```
+
+# Using as standalone browser component
+
+Download the esri2geo.js file, include on your page and reference it through the 
+esri2geo namespace:
+
+```javascript
+esri2geo.toGeoJSON(esriJSON, function (err, data) {
+  // handle error, deal with data here
+});
+```
+
+
 _Note: You can also use the other methods above._
 
 
