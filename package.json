@@ -11,19 +11,14 @@
   "bugs": {
     "url": "https://github.com/calvinmetcalf/esri2geo/issues"
   },
-  "repository":
-    {
-      "type": "git",
-      "url": "https://github.com/calvinmetcalf/esri2geo.git"
-    },
-  "main": "esri2geo.js",
-  "license": "MIT",
-  "devDependencies": {},
   "repository": {
     "type": "git",
     "url": "git://github.com/calvinmetcalf/esri2geo.git"
   },
+  "main": "esri2geo.js",
+  "license": "MIT",
+  "devDependencies": {},
   "dependencies": {
-    "request": "~2.27.0"
+    "request": "^2.79.0"
   }
 }
